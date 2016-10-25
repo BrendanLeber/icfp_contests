@@ -64,7 +64,7 @@ editors imposed very strict length limitations.  Consequently, authors
 aggressively compressed their articles. A typical publication would
 have the following form:
 
-    PUZZL.TSK=100@1001|14370747643c6d2db0a40ecb4b0bb65
+> PUZZL.TSK=100@1001|14370747643c6d2db0a40ecb4b0bb65
 
 Publications are of varying value; some will represent a greater
 contribution than others.  Given our understanding of the Cult's
@@ -96,13 +96,13 @@ Carnegie Mellon University
 
 ## UM Specification
 
-    [um-spec.txt](um-spec.txt)
+> [um-spec.txt](um-spec.txt)
 
 Specification for the Universal Machine. Text format.
 
 ## Codex
 
-    [codex.umz](codex.umz) (VOLUME ID 9)
+> [codex.umz](codex.umz) (VOLUME ID 9)
 
     MD5 hash          e328209bd65ade420371d7bd87b88e4f
     SHA-1 hash        088ac79d311db02d9823def598e48f2f8723e98a
@@ -110,7 +110,7 @@ Specification for the Universal Machine. Text format.
 
 ## SANDmark
 
-    [sandmark.umz](sandmark.umz)
+> [sandmark.umz](sandmark.umz)
 
 Benchmark for the Universal Machine. [Expected output.](sandmark-output.txt)
 
@@ -119,7 +119,7 @@ Benchmark for the Universal Machine. [Expected output.](sandmark-output.txt)
 
 ## Reference Implementation
 
-    [um.um](um.um) (1024 bytes)
+> [um.um](um.um) (1024 bytes)
 
 CMU Reference implementation of the Universal Machine.
 
