@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <map>
 #include <deque>
@@ -38,6 +40,24 @@ Template templates();
 
 DNA asnat(Number n)
 {
+#if 1
+	DNA result;
+
+	while (n) {
+		if (n & 1) {
+			result.push_back('C');
+		}
+		else {
+			result.push_back('I');
+		}
+
+		n /= 2;
+	}
+
+	result.push_back('P');
+
+	return result;
+#else
 	if (n == 0) {
 		return DNA { 'P' };
 	}
@@ -53,6 +73,7 @@ DNA asnat(Number n)
 		left.insert(std::end(left), std::begin(right), std::end(right));
 		return left;
 	}
+#endif
 }
 
 
@@ -136,13 +157,62 @@ void finish()
 
 Number nat()
 {
-	Number n;
+	Number n = 0;
 
 	if (dna.empty()) {
-		std::cerr << "#!!! nat() called with empty dna!\nBail out!\n";
+		std::cout << "#!!! nat() called with empty dna!\nBail out!\n";
 		finish();
 	}
 
+#if 1
+	if (dna[0] == 'P') {
+		dna.pop_front();
+		return 0;
+	}
+
+	auto end = std::find(std::begin(dna), std::end(dna), 'P');
+	if (end == std::end(dna)) {
+		std::cout << "# !!! nat() called without ending 'P'!\nBail out!\n";
+		std::abort();
+	}
+
+	auto it = std::prev(end);
+	while (it != std::begin(dna)) {
+		switch (*it) {
+		case 'I':
+		case 'F':
+			n *= 2;
+			break;
+
+		case 'C':
+			n = 2 * n + 1;
+			break;
+
+		default:
+			std::cout << "# !!! unrecognized base in DNA!\nBail out!\n";
+			std::abort();
+		}
+
+		it = std::prev(it);
+	}
+
+	switch (*it) {
+	case 'I':
+	case 'F':
+		n *= 2;
+		break;
+
+	case 'C':
+		n = 2 * n + 1;
+		break;
+
+	default:
+		std::cout << "# !!! unrecognized base in DNA part two!\nBail out!\n";
+		std::abort();
+	}
+
+	return n;
+#else
 	switch (dna[0]) {
 	case 'P':
 		dna.pop_front();
@@ -162,6 +232,7 @@ Number nat()
 	default:
 		std::abort();
 	}
+#endif
 }
 
 
@@ -271,7 +342,7 @@ Number nat()
 // void replace(Template tpl, Environment e)
 // {
 // 	DNA r;
-// 	for 
+// 	for
 // }
 
 
@@ -320,7 +391,7 @@ Number nat()
 // 			finish();
 // 		}
 // 	}
-// }			
+// }
 
 
 int main(int, char**)
