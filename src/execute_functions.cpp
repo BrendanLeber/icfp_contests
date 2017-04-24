@@ -244,15 +244,15 @@ Pattern pattern()
 }
 
 
-// DNA protect(Number l, DNA d)
-// {
-// 	if (l == 0) {
-// 		return d;
-// 	}
-// 	else {
-// 		return protect(l - 1, quote(d));
-// 	}
-// }
+DNA protect(Number l, DNA d)
+{
+	if (l == 0) {
+		return d;
+	}
+	else {
+		return protect(l - 1, quote(d));
+	}
+}
 
 
 DNA quote(DNA d)
