@@ -45,15 +45,22 @@ execute: $(TARGET)
 	unzip -p endo.zip endo.dna | $(TARGET) > endo.rna
 
 # Tests
-tests: $(BUILDDIR)/t01-asnat $(BUILDDIR)/t02-pattern
+test: $(BUILDDIR)/t03-quote
+	$(BUILDDIR)/t03-quote
+
+tests: $(BUILDDIR)/t01-asnat $(BUILDDIR)/t02-pattern $(BUILDDIR)/t03-quote
 	$(BUILDDIR)/t01-asnat
 	$(BUILDDIR)/t02-pattern
+	$(BUILDDIR)/t03-quote
 
-$(BUILDDIR)/t01-asnat: $(BUILDDIR)/execute_functions.o
-	$(CC) $(CFLAGS) test/t01-asnat.cpp $(INC) -I $(SRCDIR) $(LIB) $^ -o $(BUILDDIR)/t01-asnat
+$(BUILDDIR)/t01-asnat: test/t01-asnat.cpp $(BUILDDIR)/execute_functions.o
+	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
 
-$(BUILDDIR)/t02-pattern: $(BUILDDIR)/execute_functions.o
-	$(CC) $(CFLAGS) test/t02-pattern.cpp $(INC) -I $(SRCDIR) $(LIB) $^ -o $(BUILDDIR)/t02-pattern
+$(BUILDDIR)/t02-pattern: test/t02-pattern.cpp $(BUILDDIR)/execute_functions.o
+	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
+
+$(BUILDDIR)/t03-quote: test/t03-quote.cpp $(BUILDDIR)/execute_functions.o
+	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
 
 # Spikes
 ticket:

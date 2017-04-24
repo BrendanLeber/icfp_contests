@@ -255,25 +255,37 @@ Pattern pattern()
 // }
 
 
-// DNA quote(DNA d)
-// {
-// 	switch (d[0]) {
-// 	case 'I':
-// 		return "C" + quote(d.substr(1));
+DNA quote(DNA d)
+{
+	DNA result;
 
-// 	case 'C':
-// 		return "F" + quote(d.substr(1));
+	if (!d.empty()) {
+		switch (d.front()) {
+		case 'I':
+			result = quote(DNA(std::begin(d) + 1, std::end(d)));
+			result.push_front('C');
+			break;
 
-// 	case 'F':
-// 		return "P" + quote(d.substr(1));
+		case 'C':
+			result = quote(DNA(std::begin(d) + 1, std::end(d)));
+			result.push_front('F');
+			break;
 
-// 	case 'P':
-// 		return "IC" + quote(d.substr(1));
+		case 'F':
+			result = quote(DNA(std::begin(d) + 1, std::end(d)));
+			result.push_front('P');
+			break;
 
-// 	default:
-// 		return DNA();
-// 	}
-// }
+		case 'P':
+			result = quote(DNA(std::begin(d) + 1, std::end(d)));
+			result.push_front('C');
+			result.push_front('I');
+			break;
+		}
+	}
+
+	return result;
+}
 
 
 // void replace(Template tpl, Environment e)
@@ -289,33 +301,33 @@ Pattern pattern()
 
 // 	while (true) {
 // 		if (dna_starts_with("C")) {
-// 			dna.erase(0, 1);
+// 			dna.pop_front();
 // 			t += 'I';
 // 		}
 // 		else if (dna_starts_with("F")) {
-// 			dna.erase(0, 1);
+// 			dna.pop_front();
 // 			t += 'C';
 // 		}
 // 		else if (dna_starts_with("P")) {
-// 			dna.erase(0, 1);
+// 			dna.pop_front();
 // 			t += 'F';
 // 		}
 // 		else if (dna_starts_with("IC")) {
-// 			dna.erase(0, 2);
+// 			dna.pop_front();
 // 			t += 'P';
 // 		}
 // 		else if (dna_starts_with("IF") || dna_starts_with("IP")) {
-// 			dna.erase(0, 2);
+// 			dna.erase(std::begin(dna), std::begin(dna) + 2);
 // 			auto l = nat();
 // 			auto n = nat();
-// 			t += std::to_string(n) + std::to_string(l);
+// 			t += '\\' + std::to_string(n) + '\\' + std::to_string(l);
 // 		}
 // 		else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
-// 			dna.erase(0, 3);
+// 			dna.erase(std::begin(dna), std::begin(dna) + 3);
 // 			return t;
 // 		}
 // 		else if (dna_starts_with("IIP")) {
-// 			dna.erase(0, 3);
+// 			dna.erase(std::begin(dna), std::begin(dna) + 3);
 // 			auto n = nat();
 // 			t += '|' + std::to_string(n) + '|';
 // 		}
