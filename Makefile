@@ -3,19 +3,18 @@ CC := g++
 SRCDIR := src
 BUILDDIR := build
 
-TARGET := build/execute
+TARGET := bin/execute
 
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 #CFLAGS := -std=c++14 -stdlib=libstdc++ -pedantic -Weverything -Weffc++ -Wno-c++98-compat -g -O0
-#CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -g -O0
-CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2 -DPROFILE -pg
+CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -g -O0 -DTEST_PATTERN
+#CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2 -DPROFILE -pg
 
-#LIB :=
-
-#INC := -I include
+LIB := -L lib
+INC := -I include
 
 
 $(TARGET): $(OBJECTS)
@@ -46,8 +45,15 @@ execute: $(TARGET)
 	unzip -p endo.zip endo.dna | $(TARGET) > endo.rna
 
 # Tests
-test:
-	$(CC) $(CFLAGS) test/tester.cpp $(INC) $(LIB) -o $(BUILDDIR)/tester
+tests: $(BUILDDIR)/t01-asnat $(BUILDDIR)/t02-pattern
+	$(BUILDDIR)/t01-asnat
+	$(BUILDDIR)/t02-pattern
+
+$(BUILDDIR)/t01-asnat: $(BUILDDIR)/execute_functions.o
+	$(CC) $(CFLAGS) test/t01-asnat.cpp $(INC) -I $(SRCDIR) $(LIB) $^ -o $(BUILDDIR)/t01-asnat
+
+$(BUILDDIR)/t02-pattern: $(BUILDDIR)/execute_functions.o
+	$(CC) $(CFLAGS) test/t02-pattern.cpp $(INC) -I $(SRCDIR) $(LIB) $^ -o $(BUILDDIR)/t02-pattern
 
 # Spikes
 ticket:

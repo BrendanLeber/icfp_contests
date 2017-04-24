@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-
+/*
 using Coord = int;
 using Pos = std::tuple<Coord, Coord>;
 
@@ -382,3 +382,4 @@ int main(int, char**)
 
 	return 0;
 }
+*/
