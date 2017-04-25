@@ -10,6 +10,7 @@ int main(int, char**)
 {
 	std::vector<Number> expected {
 		0, std::numeric_limits<Number>::max(),
+		2, 3, 4, 5, 6, 7,
 		254, 255, 256, 257,
 		65534, 65535, 65536, 65537,
 		16777214, 16777215, 16777216, 16777277

@@ -3,17 +3,42 @@
 #include <string>
 #include <map>
 #include <deque>
+#include <utility>
 
 
 using Base = char;  // := I | C | F | P
+
+using Number = int;
+
+
 using DNA = std::deque<Base>;
+
+
 using RNA = std::deque<DNA>;
 
 
-using Template = std::string;
+struct TItem
+{
+	enum class Type { Base, Protection, Reference };
+	Type type;
+	union {
+		Base base;
+		std::pair<Number, Number> prot;
+		Number ref;
+	};
+
+	TItem(Base b) : type(Type::Base), base(b) {}
+	TItem(Number l, Number n) : type(Type::Protection), prot(std::make_pair(l, n)) {}
+	TItem(Number r) : type(Type::Reference), ref(r) {}
+};
+	
+using Template = std::deque<TItem>;
+
+
 using Pattern = std::string;
+
+
 using Environment = std::map<int, DNA>;
-using Number = int;
 
 
 extern DNA dna;

@@ -13,6 +13,9 @@ RNA rna;
 static inline bool
 dna_starts_with(const std::string& value)
 {
+	if (dna.empty() || value.empty())
+		return false;
+
 	auto it = std::begin(dna);
 	for (auto base : value) {
 		if (base != *it)
@@ -295,49 +298,50 @@ DNA quote(DNA d)
 // }
 
 
-// Template templates()
-// {
-// 	Template t;
+Template templates()
+{
+	Template t;
 
-// 	while (true) {
-// 		if (dna_starts_with("C")) {
-// 			dna.pop_front();
-// 			t += 'I';
-// 		}
-// 		else if (dna_starts_with("F")) {
-// 			dna.pop_front();
-// 			t += 'C';
-// 		}
-// 		else if (dna_starts_with("P")) {
-// 			dna.pop_front();
-// 			t += 'F';
-// 		}
-// 		else if (dna_starts_with("IC")) {
-// 			dna.pop_front();
-// 			t += 'P';
-// 		}
-// 		else if (dna_starts_with("IF") || dna_starts_with("IP")) {
-// 			dna.erase(std::begin(dna), std::begin(dna) + 2);
-// 			auto l = nat();
-// 			auto n = nat();
-// 			t += '\\' + std::to_string(n) + '\\' + std::to_string(l);
-// 		}
-// 		else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
-// 			dna.erase(std::begin(dna), std::begin(dna) + 3);
-// 			return t;
-// 		}
-// 		else if (dna_starts_with("IIP")) {
-// 			dna.erase(std::begin(dna), std::begin(dna) + 3);
-// 			auto n = nat();
-// 			t += '|' + std::to_string(n) + '|';
-// 		}
-// 		else if (dna_starts_with("III")) {
-// 			rna += dna.substr(3, 10);
-// 			dna.erase(0, 10);
-// 		}
-// 		else {
-// 			std::cout << "# !!! tempates() Unrecognized DNA sequence!\nBail out!\n";
-// 			finish();
-// 		}
-// 	}
-// }
+	while (true) {
+		if (dna_starts_with("C")) {
+			dna.pop_front();
+			t.push_back(TItem('I'));
+		}
+		else if (dna_starts_with("F")) {
+			dna.pop_front();
+			t.push_back(TItem('C'));
+		}
+		else if (dna_starts_with("P")) {
+			dna.pop_front();
+			t.push_back(TItem('F'));
+		}
+		else if (dna_starts_with("IC")) {
+			dna.erase(std::begin(dna), std::begin(dna) + 2);
+			t.push_back(TItem('P'));
+		}
+		else if (dna_starts_with("IF") || dna_starts_with("IP")) {
+			dna.erase(std::begin(dna), std::begin(dna) + 2);
+			auto l = nat();
+			auto n = nat();
+			t.push_back(TItem(l, n));
+		}
+		else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
+			dna.erase(std::begin(dna), std::begin(dna) + 3);
+			return t;
+		}
+		else if (dna_starts_with("IIP")) {
+			dna.erase(std::begin(dna), std::begin(dna) + 3);
+			auto n = nat();
+			t.push_back((n));
+		}
+		else if (dna_starts_with("III")) {
+			DNA slice(std::begin(dna) + 3, std::begin(dna) + 11);
+			rna.push_back(slice);
+			dna.erase(std::begin(dna), std::begin(dna) + 11);
+		}
+		else {
+			std::cout << "# !!! tempates() Unrecognized DNA sequence!\nBail out!\n";
+			finish();
+		}
+	}
+}

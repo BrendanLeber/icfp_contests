@@ -45,14 +45,17 @@ execute: $(TARGET)
 	unzip -p endo.zip endo.dna | $(TARGET) > endo.rna
 
 # Tests
-test: $(BUILDDIR)/t04-protect
-	$(BUILDDIR)/t04-protect
+test: $(BUILDDIR)/t06-templates
+	$(BUILDDIR)/t06-templates
 
-tests: $(BUILDDIR)/t01-asnat $(BUILDDIR)/t02-pattern $(BUILDDIR)/t03-quote $(BUILDDIR)/t04-protect
+tests: $(BUILDDIR)/t01-asnat $(BUILDDIR)/t02-pattern $(BUILDDIR)/t03-quote $(BUILDDIR)/t04-protect \
+	$(BUILDDIR)/t05-consts $(BUILDDIR)/t06-templates
 	$(BUILDDIR)/t01-asnat
 	$(BUILDDIR)/t02-pattern
 	$(BUILDDIR)/t03-quote
 	$(BUILDDIR)/t04-protect
+	$(BUILDDIR)/t05-consts
+	$(BUILDDIR)/t06-templates
 
 $(BUILDDIR)/t01-asnat: test/t01-asnat.cpp $(BUILDDIR)/execute_functions.o
 	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
@@ -64,6 +67,12 @@ $(BUILDDIR)/t03-quote: test/t03-quote.cpp $(BUILDDIR)/execute_functions.o
 	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
 
 $(BUILDDIR)/t04-protect: test/t04-protect.cpp $(BUILDDIR)/execute_functions.o
+	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
+
+$(BUILDDIR)/t05-consts: test/t05-consts.cpp $(BUILDDIR)/execute_functions.o
+	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
+
+$(BUILDDIR)/t06-templates: test/t06-templates.cpp $(BUILDDIR)/execute_functions.o
 	$(CC) $(CFLAGS) $(INC) -I $(SRCDIR) $(LIB) $^ -o $@
 
 # Spikes
