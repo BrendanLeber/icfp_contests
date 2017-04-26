@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <map>
 #include <deque>
 #include <utility>
 
@@ -15,6 +14,13 @@ using DNA = std::deque<Base>;
 
 
 using RNA = std::deque<DNA>;
+
+
+DNA asnat(Number N);
+DNA consts();
+void execute();
+void finish();
+Number nat();
 
 
 struct TItem
@@ -35,10 +41,39 @@ struct TItem
 using Template = std::deque<TItem>;
 
 
-using Pattern = std::string;
+struct PItem
+{
+	enum class Type { Base, Skip, Search, Open, Close };
+	Type type;
+
+	Base base;
+	Number skip;
+	DNA search;
+	bool open;
+
+	PItem(Base b) : type(Type::Base), base(b), skip(0), search(DNA()), open(false) {}
+	PItem(Number s) : type(Type::Skip), base(0), skip(s), search(DNA()), open(false) {}
+	PItem(DNA s) : type(Type::Search), base(0), skip(0), search(s), open(false) {}
+	PItem(bool op) : type(op ? Type::Open : Type::Close), base(0), skip(0), search(DNA()), open(op) {}
+
+	~PItem() {
+		if (type == Type::Search)
+			search.clear();
+	}
+
+	PItem(PItem&& src)
+		: type(std::move(src.type)),
+		  base(std::move(src.base)),
+		  skip(std::move(src.skip)),
+		  search(std::move(src.search)),
+		  open(std::move(src.open))
+	{}
+};
+
+using Pattern = std::deque<PItem>;
 
 
-using Environment = std::map<int, DNA>;
+using Environment = std::deque<DNA>;
 
 
 extern DNA dna;
@@ -48,13 +83,9 @@ extern RNA rna;
 // inline bool dna_starts_with(const std::string& val) { return dna.find(val) == 0; }
 
 
-DNA asnat(Number N);
-DNA consts();
-void finish();
-void matchreplace(Pattern pat, Template t);
-Number nat();
+void matchreplace(const Pattern& pat, const Template& t);
 Pattern pattern();
-DNA protect(Number l, DNA d);
-DNA quote(DNA d);
-void replace(Template tpl, Environment e);
+DNA protect(Number l, const DNA& d);
+DNA quote(const DNA& d);
+void replace(const Template& tpl, const Environment& e);
 Template templates();
