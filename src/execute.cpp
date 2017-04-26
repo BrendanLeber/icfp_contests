@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "execute_functions.hpp"
+#include "dna.hpp"
 
 
 void read(std::string dna_file)

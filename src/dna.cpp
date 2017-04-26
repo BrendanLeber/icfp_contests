@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iterator>
 
-#include "execute_functions.hpp"
+#include "dna.hpp"
 
 
 DNA dna;
