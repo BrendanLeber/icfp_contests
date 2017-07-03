@@ -8,7 +8,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 #CFLAGS := -std=c++14 -stdlib=libstdc++ -pedantic -Weverything -Weffc++ -Wno-c++98-compat -g -O0
-CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -g -O0 -DTRACE
+CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -Iinclude -g -O0 -DTRACE
 #CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2
 #CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2 -DPROFILE -pg
 

@@ -18,7 +18,7 @@ const RGB white { 255, 255, 255 };
 const Transparency transparent { 0 };
 const Transparency opaque { 255 };
 
-Bitmap transparentBitmap;
+Bitmap transparentBitmap(BMP_HEIGHT, BMP_WIDTH);
 
 
 Bucket bucket;
@@ -31,13 +31,7 @@ RNA rna;
 
 void rna_init()
 {
-	transparentBitmap.resize(BMP_HEIGHT);
-	for (auto& row : transparentBitmap) {
-		row.resize(BMP_WIDTH);
-		for (auto& col : row)
-			col = std::make_pair(std::make_tuple(0, 0, 0), 0);
-	}
-
+	transparentBitmap.fill(std::make_pair(std::make_tuple(0, 0, 0), 0));
 	bitmaps.clear();
 	bitmaps.push_back(transparentBitmap);
 }
@@ -130,7 +124,7 @@ Pixel currentPixel()
 	greens.reserve(bucket.size());
 	blues.reserve(bucket.size());
 	alphas.reserve(bucket.size());
-	
+
 	for (const auto& color : bucket) {
 		if (color.type == Color::Type::Color) {
 			reds.push_back(std::get<0>(color.color));
@@ -147,7 +141,7 @@ Pixel currentPixel()
 	auto alpha = average(alphas, 255);
 
 	double arange = static_cast<double>(alpha) / 255.0;
-	
+
 	auto new_r = static_cast<Component>(std::floor(static_cast<double>(red) * arange));
 	auto new_g = static_cast<Component>(std::floor(static_cast<double>(green) * arange));
 	auto new_b = static_cast<Component>(std::floor(static_cast<double>(blue) * arange));
@@ -254,7 +248,7 @@ Pixel getPixel(Pos p)
 	Coord x, y;
 	std::tie(x, y) = p;
 
-	return bitmaps[0][x][y];
+	return bitmaps[0].at(x, y);
 }
 
 
@@ -263,7 +257,7 @@ void setPixel(Pos p)
 	Coord x, y;
 	std::tie(x, y) = p;
 
-	bitmaps[0][x][y] = currentPixel();
+	bitmaps[0].at(x, y) = currentPixel();
 }
 
 
@@ -272,7 +266,7 @@ void line(Pos p0, Pos p1)
 	Coord x0, y0, x1, y1;
 	std::tie(x0, y0) = p0;
 	std::tie(x1, y1) = p1;
-	
+
 	auto deltax = x1 - x0;
 	auto deltay = y1 - y0;
 
@@ -308,8 +302,8 @@ void fill(Pos p, Pixel initial)
 	Pos::second_type y;
 	std::tie(x, y) = p;
 
-	if (getPixel(x, y) == initial) {
-		setPixel(x, y);
+	if (getPixel(p) == initial) {
+		setPixel(p);
 		if (x > 0) {
 			fill(std::make_pair(x - 1, y), initial);
 		}
@@ -328,7 +322,7 @@ void fill(Pos p, Pixel initial)
 
 void addBitmap(Bitmap b)
 {
-	if (bitmaps.length() < 10) {
+	if (bitmaps.size() < 10) {
 		bitmaps.push_front(b);
 	}
 }
@@ -336,18 +330,27 @@ void addBitmap(Bitmap b)
 
 void compose()
 {
-	if (bitmaps.length() >= 2) {
+	if (bitmaps.size() >= 2) {
 		for (int x = 0; x < 600; ++x) {
 			for (int y = 0; y < 600; ++y) {
-				let ((r0, g0, b0), a0) <- bitmaps[0][x][y];
-				let ((r1, g1, b1), a1) <- bitmaps[1][x][y];
+				// let ((r0, g0, b0), a0) <- bitmaps[0].at(x, y);
+				auto const& p0 = bitmaps[0].at(x, y);
+				Component r0, g0, b0;
+				std::tie(r0, g0, b0) = p0.first;
+				Transparency a0 = p0.second;
+
+				// let ((r1, g1, b1), a1) <- bitmaps[1].at(x, y);
+				auto const& p1 = bitmaps[1].at(x, y);
+				Component r1, g1, b1;
+				std::tie(r1, g1, b1) = p1.first;
+				Transparency a1 = p1.second;
 
 				auto r = r0 + std::floor(r1 * (255 - a0) / 255);
 				auto g = g0 + std::floor(g1 * (255 - a0) / 255);
 				auto b = b0 + std::floor(b1 * (255 - a0) / 255);
 				auto a = a0 + std::floor(a1 * (255 - a0) / 255);
-				
-				bitmaps[1][x][y] = ((r, g, b), a);
+
+				bitmaps[1].at(x, y) = std::make_pair(std::make_tuple(r, g, b), a);
 			}
 		}
 	}
@@ -356,18 +359,27 @@ void compose()
 
 void clip()
 {
-	if (bitmaps.length() >= 2) {
+	if (bitmaps.size() >= 2) {
 		for (int x = 0; x < 600; ++x) {
 			for (int y = 0; y < 600; ++y) {
-				let ((r0, g0, b0), a0) <- bitmaps[0][x][y];
-				let ((r1, g1, b1), a1) <- bitmaps[1][x][y];
+				// let ((r0, g0, b0), a0) <- bitmaps[0].at(x, y);
+				auto const& p0 = bitmaps[0].at(x, y);
+				Component r0, g0, b0;
+				std::tie(r0, g0, b0) = p0.first;
+				Transparency a0 = p0.second;
+
+				// let ((r1, g1, b1), a1) <- bitmaps[1].at(x, y);
+				auto const& p1 = bitmaps[1].at(x, y);
+				Component r1, g1, b1;
+				std::tie(r1, g1, b1) = p1.first;
+				Transparency a1 = p1.second;
 
 				auto r = std::floor(r1 * a0 / 255);
 				auto g = std::floor(g1 * a0 / 255);
 				auto b = std::floor(b1 * a0 / 255);
 				auto a = std::floor(a1 * a0 / 255);
-				
-				bitmaps[1][x][y] = ((r, g, b), a);
+
+				bitmaps[1].at(x, y) = std::make_pair(std::make_tuple(r, g, b), a);
 			}
 		}
 

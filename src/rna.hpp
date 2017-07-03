@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "array.hpp"
+
 
 using Coord = int;
 using Pos = std::pair<Coord, Coord>;
@@ -18,7 +20,7 @@ using Pixel = std::pair<RGB, Transparency>;
 constexpr size_t BMP_WIDTH = 600;
 constexpr size_t BMP_HEIGHT = 600;
 
-using Bitmap = std::vector<std::vector<Pixel>>;
+using Bitmap = bml::Array<Pixel>;
 
 
 struct Color
