@@ -29,6 +29,33 @@ public:
 		// internal_array = new T[rows_ * cols_];
 	}
 
+	Array(const Array& src)
+		: rows_(src.rows_), cols_(src.cols_), internal_array(new T[rows_ * cols_])
+	{
+		for (size_t i = 0; i < rows_ * cols_; ++i)
+			internal_array[i] = src.internal_array[i];
+	}
+
+	Array& operator=(const Array& src)
+	{
+		if (this == &src)
+			return *this;
+
+		// release any existing memory
+		delete[] internal_array;
+
+		// setup member variables
+		rows_ = src.rows_;
+		cols_ = src.cols_;
+		internal_array = new T[rows_ * cols_];
+
+		// copy src to ourselves
+		for (size_t i = 0; i < rows_ * cols_; ++i)
+			internal_array[i] = src.internal_array[i];
+
+		return *this;
+	}
+
 	~Array()
 	{
 		delete[] internal_array;
@@ -82,7 +109,5 @@ public:
 	}
 
 private:
-	Array(Array&) = delete;
-	Array& operator=(Array&) = delete;
 };
 }

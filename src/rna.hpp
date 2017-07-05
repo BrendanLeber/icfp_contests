@@ -69,7 +69,7 @@ void rna_init();
 
 void clip();
 void compose();
-void addBitmap(Bitmap b);
+void addBitmap(Bitmap& b);
 void fill(Pos p, Pixel initial);
 void tryfill();
 void line(Pos p0, Pos p1);
@@ -82,3 +82,5 @@ Component average(const std::vector<Component>& values, Component def);
 Pixel currentPixel();
 void addColor(Color c);
 void build();
+
+void draw(const Bitmap& bmp);

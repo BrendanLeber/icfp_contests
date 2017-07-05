@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
 	rna_init();
 	read(argv[1]);
-	//build();
+	build();
 
 	return EXIT_FAILURE;
 }

@@ -1,7 +1,10 @@
 #include <cmath>
 #include <cstdlib>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <numeric>
+#include <sstream>
 
 #include "rna.hpp"
 
@@ -37,10 +40,18 @@ void rna_init()
 }
 
 
-/*
 void build()
 {
+	// @TODO(BML) - give some idea of how far we've gotten
+	static size_t counter = 0;
+	std::cerr << "rna 0 of " << rna.size() << '\n';
+
 	for (const auto& r : rna) {
+		// @TODO(BML) - give some idea of how far we've gotten
+		if (!(++counter % 1024)) {
+			std::cerr << "rna " << counter << " of " << rna.size() << '\n';
+		}
+
 		if (r == "PIPIIIC") {
 			addColor(black);
 		}
@@ -102,13 +113,14 @@ void build()
 			clip();
 		}
 		else {
-			std::cerr << "Unknown RNA '" << r "'!\n";
+			// @TODO(BML) - what unknown RNA is included?
+			std::cerr << "Unknown RNA '" << r << "'!\n";
 		}
 	}
 
 	draw(bitmaps[0]);
 }
-*/
+
 
 void addColor(Color c)
 {
@@ -320,10 +332,14 @@ void fill(Pos p, Pixel initial)
 }
 
 
-void addBitmap(Bitmap b)
+void addBitmap(Bitmap& b)
 {
 	if (bitmaps.size() < 10) {
 		bitmaps.push_front(b);
+	}
+	else {
+		// @TODO(BML) - debug write bitmap that would be dumped
+		draw(b);
 	}
 }
 
@@ -383,6 +399,34 @@ void clip()
 			}
 		}
 
+		// @TODO(BML) -- write bitmap about to be lost
+		draw(bitmaps[0]);
+
 		bitmaps.pop_front();
+	}
+}
+
+
+void draw(const Bitmap& bmp)
+{
+	static size_t counter = 0;
+
+	std::stringstream ss;
+	ss << "endo-" << std::setw(10) << std::setfill('0') << counter++;
+
+	std::ofstream pbm(ss.str());
+
+	// header
+	pbm << "P3\n" << bmp.cols() << ' ' << bmp.rows() << " 255\n";
+
+	for (size_t row = 0; row < bmp.rows(); ++row) {
+		for (size_t col = 0; col < bmp.cols(); ++col) {
+			auto pixel = bmp.at(row, col);
+			Component r, g, b;
+			std::tie(r, g, b) = pixel.first;
+			pbm << r << ' ' << g << ' ' << b << ' ';
+		}
+
+		pbm << '\n';
 	}
 }
