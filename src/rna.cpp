@@ -1,12 +1,20 @@
 #include <cmath>
 #include <cstdlib>
+#include <deque>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <numeric>
 #include <sstream>
 
+#include <zlib.h>
+#include <png.h>
+
 #include "rna.hpp"
+
+
+// @TODO(bml)
+void dump_state();
 
 
 const RGB black { 0, 0, 0 };
@@ -32,6 +40,42 @@ std::deque<Bitmap> bitmaps;
 RNA rna;
 
 
+// @TODO(bml)
+void dump_state()
+{
+	std::cerr << "position { " << position.first << ", " << position.second << " }  ";
+	std::cerr << "mark { " << mark.first << ", " << mark.second << " }  ";
+
+	std::cerr << "dir ";
+	switch (dir) {
+	case Dir::N:  std::cerr << "North  ";  break;
+	case Dir::E:  std::cerr << "East   ";   break;
+	case Dir::S:  std::cerr << "South  ";  break;
+	case Dir::W:  std::cerr << "West   ";   break;
+	}
+
+	std::cerr << "bucket:";
+	if (bucket.empty()) {
+		std::cerr << " <nil>\n";
+	}
+	else {
+		for (const auto& color : bucket) {
+			if (color.type == Color::Type::Color) {
+				Component r, g, b;
+				std::tie(r, g, b) = color.color;
+			
+				std::cerr << " { " << r << ' ' << g << ' ' << b << " }";
+			}
+			else {
+				std::cerr << ' ' << color.alpha;
+			}
+		}
+	}
+
+	std::cerr << '\n';
+}
+
+
 void rna_init()
 {
 	transparentBitmap.fill(std::make_pair(std::make_tuple(0, 0, 0), 0));
@@ -44,14 +88,10 @@ void build()
 {
 	// @TODO(BML) - give some idea of how far we've gotten
 	static size_t counter = 0;
-	std::cerr << "rna 0 of " << rna.size() << '\n';
+	// std::cerr << "initial state: ";
+	// dump_state();
 
 	for (const auto& r : rna) {
-		// @TODO(BML) - give some idea of how far we've gotten
-		if (!(++counter % 1024)) {
-			std::cerr << "rna " << counter << " of " << rna.size() << '\n';
-		}
-
 		if (r == "PIPIIIC") {
 			addColor(black);
 		}
@@ -97,11 +137,13 @@ void build()
 		else if (r == "PCCIFFP") {
 			mark = position;
 		}
-		else if (r == "PCCIFFP") {
+		else if (r == "PFFICCP") {
 			line(position, mark);
 		}
 		else if (r == "PIIPIIP") {
+			// draw(bitmaps[0]);
 			tryfill();
+			// draw(bitmaps[0]);
 		}
 		else if (r == "PCCPFFP") {
 			addBitmap(transparentBitmap);
@@ -112,10 +154,13 @@ void build()
 		else if (r == "PFFICCF") {
 			clip();
 		}
-		else {
-			// @TODO(BML) - what unknown RNA is included?
-			std::cerr << "Unknown RNA '" << r << "'!\n";
-		}
+
+		// @TODO(BML) - give some idea of how far we've gotten
+		// std::cerr << "\nstep " << counter++ << ": " << r << "  ";
+		// dump_state();
+		counter++;
+		if (!(counter % 8192))
+			std::cerr << counter << " of " << rna.size() << " (" << (counter * 100 / rna.size()) << "%)\n";
 	}
 
 	draw(bitmaps[0]);
@@ -310,6 +355,11 @@ void tryfill()
 
 void fill(Pos p, Pixel initial)
 {
+	Component r, g, b;
+	std::tie(r, g, b) = initial.first;
+	auto a = initial.second;
+	std::cerr << "fill({ " << p.first << ' ' << p.second << " }, { " << r << ' ' << g << ' ' << b << " | " << a << " })\n";
+#if 0
 	Pos::first_type x;
 	Pos::second_type y;
 	std::tie(x, y) = p;
@@ -329,6 +379,39 @@ void fill(Pos p, Pixel initial)
 			fill(std::make_pair(x, y + 1), initial);
 		}
 	}
+#else
+	std::deque<Pos> work;
+	work.push_back(p);
+
+	while (!work.empty()) {
+		auto node = work.front();
+		work.pop_front();
+
+		auto west = node;
+		while (west.first > 0 && getPixel(west) == initial)
+			west.first--;
+
+		auto east = node;
+		while (east.first < 599 && getPixel(east) == initial)
+			east.first++;
+		
+		for (Pos pos = west; pos.second <= east.second; ++pos.second) {
+			setPixel(pos);
+
+			if (pos.second > 0) {
+				auto north = std::make_pair(pos.first, pos.second - 1);
+				if (getPixel(north) != initial)
+					work.push_back(north);
+			}
+			
+			if (pos.second < 599) {
+				auto south = std::make_pair(pos.first, pos.second + 1);
+				if (getPixel(south) != initial)
+					work.push_back(south);
+			}
+		}
+	}
+#endif
 }
 
 
@@ -339,7 +422,7 @@ void addBitmap(Bitmap& b)
 	}
 	else {
 		// @TODO(BML) - debug write bitmap that would be dumped
-		draw(b);
+		// draw(b);
 	}
 }
 
@@ -369,6 +452,11 @@ void compose()
 				bitmaps[1].at(x, y) = std::make_pair(std::make_tuple(r, g, b), a);
 			}
 		}
+
+		// @TODO(bml) - write bitmap about to be lost
+		// draw(bitmaps[0]);
+
+		bitmaps.pop_front();
 	}
 }
 
@@ -400,7 +488,7 @@ void clip()
 		}
 
 		// @TODO(BML) -- write bitmap about to be lost
-		draw(bitmaps[0]);
+		// draw(bitmaps[0]);
 
 		bitmaps.pop_front();
 	}
@@ -412,8 +500,7 @@ void draw(const Bitmap& bmp)
 	static size_t counter = 0;
 
 	std::stringstream ss;
-	ss << "endo-" << std::setw(10) << std::setfill('0') << counter++;
-
+	ss << "endo-" << std::setw(10) << std::setfill('0') << counter++ << ".pgm";
 	std::ofstream pbm(ss.str());
 
 	// header
@@ -424,7 +511,7 @@ void draw(const Bitmap& bmp)
 			auto pixel = bmp.at(row, col);
 			Component r, g, b;
 			std::tie(r, g, b) = pixel.first;
-			pbm << r << ' ' << g << ' ' << b << ' ';
+			pbm << std::setw(4) << r << std::setw(4) << g << std::setw(4) << b << "  ";
 		}
 
 		pbm << '\n';

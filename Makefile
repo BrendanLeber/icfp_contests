@@ -12,7 +12,7 @@ CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -Iinclude -g -O0
 #CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2
 #CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2 -DPROFILE -pg
 
-LIB := -L lib
+LIB := -L lib -lz -lpng
 INC := -I include
 
 
