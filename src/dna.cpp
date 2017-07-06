@@ -187,8 +187,8 @@ void execute()
         std::cerr << "iteration " << iteration << '\n';
         std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
 #else
-        if (!(iteration % 1000))
-            std::cerr << "iteration " << iteration << '\n';
+        if (!(iteration % 1024))
+            std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << rna.size() << '\n';
 #endif
 
         auto pat = pattern();

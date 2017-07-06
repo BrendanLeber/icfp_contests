@@ -130,7 +130,6 @@ void build()
             line(position, mark);
         } else if (r == "PIIPIIP") {
             tryfill();
-            // draw(bitmaps[0]);  // @TODO(bml)
         } else if (r == "PCCPFFP") {
             addBitmap(transparentBitmap);
         } else if (r == "PFFPCCP") {
@@ -323,8 +322,10 @@ void tryfill()
 {
     auto n = currentPixel();
     auto o = getPixel(position);
-    if (n != o)
+    if (n != o) {
+        // draw(bitmaps[0]);  // @TODO(bml) - save what might be overwritten
         fill(position, o);
+    }
 }
 
 void fill(Pos p, Pixel initial)
@@ -394,16 +395,15 @@ void fill(Pos p, Pixel initial)
 
 void addBitmap(Bitmap& b)
 {
-    if (bitmaps.size() < 10) {
+    if (bitmaps.size() < 10)
         bitmaps.push_front(b);
-    } else {
-        // @TODO(bml) - debug write bitmap that would be dumped
-        // draw(b);
-    }
 }
 
 void compose()
 {
+    // @TODO(bml) - write bitmap that might be lost
+    // draw(bitmaps[1]);
+
     if (bitmaps.size() >= 2) {
         for (int x = 0; x < 600; ++x) {
             for (int y = 0; y < 600; ++y) {
@@ -437,6 +437,9 @@ void compose()
 
 void clip()
 {
+    // @TODO(bml) - write bitmap that might be lost
+    // draw(bitmaps[1]);
+
     if (bitmaps.size() >= 2) {
         for (int x = 0; x < 600; ++x) {
             for (int y = 0; y < 600; ++y) {
@@ -474,9 +477,12 @@ void draw(const Bitmap& bmp)
 	static size_t counter = 0;
 	std::stringstream ss;
 	ss << "endo-" << std::setw(10) << std::setfill('0') << counter++ << ".png";
+#else
+    std::stringstream ss;
+    ss << "endo.png";
 #endif
 
-    auto fp = std::fopen("endo.png" /* || ss.str().c_str() */, "wb");
+    auto fp = std::fopen(ss.str().c_str(), "wb");
     if (!fp)
         throw std::runtime_error(std::strerror(errno));
 

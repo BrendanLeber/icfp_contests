@@ -37,12 +37,14 @@ void read(std::string dna_file)
 
 int main(int argc, char** argv)
 {
-    if (argc != 2) {
-        std::cerr << "Syntax: " << argv[0] << " <dna-file>\n";
+    if (argc < 2) {
+        std::cerr << "Syntax: " << argv[0] << " <dna-file>...\n";
         exit(EXIT_FAILURE);
     }
 
-    read(argv[1]);
+    for (int arg = 1; arg < argc; ++arg)
+        read(argv[arg]);
+
     execute();
 
     // we exit when matchreplace() calls finish().
