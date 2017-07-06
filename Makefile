@@ -8,8 +8,8 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 #CFLAGS := -std=c++14 -stdlib=libstdc++ -pedantic -Weverything -Weffc++ -Wno-c++98-compat -g -O0
-CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -Iinclude -g -O0 -DTRACE
-#CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2
+#CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -Iinclude -g -O0 -DTRACE
+CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -Iinclude -O3
 #CFLAGS := -std=c++14 -pedantic -Wall -Weffc++ -Wno-c++98-compat -O2 -DPROFILE -pg
 
 LIB := -L lib -lz -lpng
@@ -33,11 +33,11 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 
-checks: $(SRCDIR)/%.$(SRCEXT)
+tidy: $(SRCDIR)/*.$(SRCEXT)
 	clang-tidy $^ -config='' -- $(CFLAGS)
 
 
-format: $(SRCDIR)/%.$(SRCEXT)
+format: $(SRCDIR)/*.$(SRCEXT) $(SRCDIR)/*.hpp include/*.hpp
 	clang-format -i -style=file $^
 
 
@@ -51,8 +51,26 @@ execute: $(TARGET)
 	unzip -p endo.zip endo.dna | $(TARGET) > endo.rna
 
 # Tests
-test: $(BUILDDIR)/t12-moves
+one_test: $(BUILDDIR)/t12-moves
 	$(BUILDDIR)/t12-moves
+
+check: build_test_square build_test_fill_square build_test_fill_flood build_test_fill_empty
+
+build_test_square: bin/build
+	bin/build test/test_square.rna
+	diff endo.png test/result_square.png
+
+build_test_fill_square: bin/build
+	bin/build test/test_fill_square.rna
+	diff endo.png test/result_fill_square.png
+
+build_test_fill_flood: bin/build
+	bin/build test/test_fill_flood.rna
+	diff endo.png test/result_fill_flood.png
+
+build_test_fill_empty: bin/build
+	bin/build test/test_fill_empty.rna
+	diff endo.png test/result_fill_empty.png
 
 tests: $(BUILDDIR)/t01-asnat $(BUILDDIR)/t02-pattern $(BUILDDIR)/t03-quote $(BUILDDIR)/t04-protect \
 	$(BUILDDIR)/t05-consts $(BUILDDIR)/t06-templates

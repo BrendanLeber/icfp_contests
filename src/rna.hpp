@@ -8,7 +8,6 @@
 
 #include "array.hpp"
 
-
 using Coord = int;
 using Pos = std::pair<Coord, Coord>;
 
@@ -22,25 +21,36 @@ constexpr size_t BMP_HEIGHT = 600;
 
 using Bitmap = bml::Array<Pixel>;
 
+struct Color {
+    enum class Type { Color,
+        Transparency };
+    Type type;
+    RGB color;
+    Transparency alpha;
 
-struct Color
-{
-	enum class Type { Color, Transparency };
-	Type type;
-	RGB color;
-	Transparency alpha;
-
-	Color(RGB c) : type(Type::Color), color(c), alpha(0) {}
-	Color(Transparency a) : type(Type::Transparency), color(std::make_tuple(0, 0, 0)), alpha(a) {}
+    Color(RGB c)
+        : type(Type::Color)
+        , color(c)
+        , alpha(0)
+    {
+    }
+    Color(Transparency a)
+        : type(Type::Transparency)
+        , color(std::make_tuple(0, 0, 0))
+        , alpha(a)
+    {
+    }
 };
 
 using Bucket = std::deque<Color>;
 
-enum class Dir { N, E, S, W };
+enum class Dir { N,
+    E,
+    S,
+    W };
 
 using DNA = std::string;
 using RNA = std::deque<DNA>;
-
 
 extern const RGB black;
 extern const RGB red;
@@ -56,14 +66,12 @@ extern const Transparency opaque;
 
 extern Bitmap transparentBitmap;
 
-
 extern Bucket bucket;
 extern Pos position;
 extern Pos mark;
 extern Dir dir;
-extern std::deque<Bitmap> bitmaps;  // <- transparentBitmap <| empty
+extern std::deque<Bitmap> bitmaps; // <- transparentBitmap <| empty
 extern RNA rna;
-
 
 void rna_init();
 
