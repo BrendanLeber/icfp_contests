@@ -102,7 +102,7 @@ Specification for the Universal Machine. Text format.
 
 ## Codex
 
-> [codex.umz](codex.umz) (VOLUME ID 9)
+> [codex.umz](../data/codex.umz) (VOLUME ID 9)
 
     MD5 hash          e328209bd65ade420371d7bd87b88e4f
     SHA-1 hash        088ac79d311db02d9823def598e48f2f8723e98a
@@ -110,7 +110,7 @@ Specification for the Universal Machine. Text format.
 
 ## SANDmark
 
-> [sandmark.umz](sandmark.umz)
+> [sandmark.umz](../data/sandmark.umz)
 
 Benchmark for the Universal Machine. [Expected output.](sandmark-output.txt)
 
@@ -119,7 +119,7 @@ Benchmark for the Universal Machine. [Expected output.](sandmark-output.txt)
 
 ## Reference Implementation
 
-> [um.um](um.um) (1024 bytes)
+> [um.um](../data/um.um) (1024 bytes)
 
 CMU Reference implementation of the Universal Machine.
 
