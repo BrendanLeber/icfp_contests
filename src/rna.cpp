@@ -65,14 +65,16 @@ void dump_state()
     std::cerr << "bucket:";
     if (bucket.empty()) {
         std::cerr << " <nil>\n";
-    } else {
+    }
+    else {
         for (const auto& color : bucket) {
             if (color.type == Color::Type::Color) {
                 Component r, g, b;
                 std::tie(r, g, b) = color.color;
 
                 std::cerr << " { " << r << ' ' << g << ' ' << b << " }";
-            } else {
+            }
+            else {
                 std::cerr << ' ' << color.alpha;
             }
         }
@@ -98,43 +100,62 @@ void build()
     for (const auto& r : rna) {
         if (r == "PIPIIIC") {
             addColor(black);
-        } else if (r == "PIPIIIP") {
+        }
+        else if (r == "PIPIIIP") {
             addColor(red);
-        } else if (r == "PIPIICC") {
+        }
+        else if (r == "PIPIICC") {
             addColor(green);
-        } else if (r == "PIPIICF") {
+        }
+        else if (r == "PIPIICF") {
             addColor(yellow);
-        } else if (r == "PIPIICP") {
+        }
+        else if (r == "PIPIICP") {
             addColor(blue);
-        } else if (r == "PIPIIFC") {
+        }
+        else if (r == "PIPIIFC") {
             addColor(magenta);
-        } else if (r == "PIPIIFF") {
+        }
+        else if (r == "PIPIIFF") {
             addColor(cyan);
-        } else if (r == "PIPIIPC") {
+        }
+        else if (r == "PIPIIPC") {
             addColor(white);
-        } else if (r == "PIPIIPF") {
+        }
+        else if (r == "PIPIIPF") {
             addColor(transparent);
-        } else if (r == "PIPIIPP") {
+        }
+        else if (r == "PIPIIPP") {
             addColor(opaque);
-        } else if (r == "PIIPICP") {
+        }
+        else if (r == "PIIPICP") {
             bucket.clear();
-        } else if (r == "PIIIIIP") {
+        }
+        else if (r == "PIIIIIP") {
             position = move(position, dir);
-        } else if (r == "PCCCCCP") {
+        }
+        else if (r == "PCCCCCP") {
             dir = turnCounterClockwise(dir);
-        } else if (r == "PFFFFFP") {
+        }
+        else if (r == "PFFFFFP") {
             dir = turnClockwise(dir);
-        } else if (r == "PCCIFFP") {
+        }
+        else if (r == "PCCIFFP") {
             mark = position;
-        } else if (r == "PFFICCP") {
+        }
+        else if (r == "PFFICCP") {
             line(position, mark);
-        } else if (r == "PIIPIIP") {
+        }
+        else if (r == "PIIPIIP") {
             tryfill();
-        } else if (r == "PCCPFFP") {
+        }
+        else if (r == "PCCPFFP") {
             addBitmap(transparentBitmap);
-        } else if (r == "PFFPCCP") {
+        }
+        else if (r == "PFFPCCP") {
             compose();
-        } else if (r == "PFFICCF") {
+        }
+        else if (r == "PFFICCF") {
             clip();
         }
 
@@ -170,7 +191,8 @@ Pixel currentPixel()
             reds.push_back(std::get<0>(color.color));
             greens.push_back(std::get<1>(color.color));
             blues.push_back(std::get<2>(color.color));
-        } else
+        }
+        else
             alphas.push_back(color.alpha);
     }
 
@@ -192,7 +214,8 @@ Component average(const std::vector<Component>& values, Component def)
 {
     if (values.empty()) {
         return def;
-    } else {
+    }
+    else {
         double sum = static_cast<double>(std::accumulate(std::begin(values), std::end(values), 0));
         double len = static_cast<double>(values.size());
         return static_cast<Component>(std::floor(sum / len));

@@ -29,15 +29,11 @@ struct Color {
     Transparency alpha;
 
     Color(RGB c)
-        : type(Type::Color)
-        , color(c)
-        , alpha(0)
+        : type(Type::Color), color(c), alpha(0)
     {
     }
     Color(Transparency a)
-        : type(Type::Transparency)
-        , color(std::make_tuple(0, 0, 0))
-        , alpha(a)
+        : type(Type::Transparency), color(std::make_tuple(0, 0, 0)), alpha(a)
     {
     }
 };

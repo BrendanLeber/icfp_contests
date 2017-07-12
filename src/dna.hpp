@@ -30,18 +30,17 @@ struct TItem {
     };
 
     TItem(Base b)
-        : type(Type::Base)
-        , base(b)
+        : type(Type::Base), base(b)
     {
     }
+
     TItem(Number l, Number n)
-        : type(Type::Protection)
-        , prot(std::make_pair(l, n))
+        : type(Type::Protection), prot(std::make_pair(l, n))
     {
     }
+
     TItem(Number r)
-        : type(Type::Reference)
-        , ref(r)
+        : type(Type::Reference), ref(r)
     {
     }
 };
@@ -62,35 +61,22 @@ struct PItem {
     bool open;
 
     PItem(Base b)
-        : type(Type::Base)
-        , base(b)
-        , skip(0)
-        , search(DNA())
-        , open(false)
+        : type(Type::Base), base(b), skip(0), search(DNA()), open(false)
     {
     }
+
     PItem(Number s)
-        : type(Type::Skip)
-        , base(0)
-        , skip(s)
-        , search(DNA())
-        , open(false)
+        : type(Type::Skip), base(0), skip(s), search(DNA()), open(false)
     {
     }
+
     PItem(DNA s)
-        : type(Type::Search)
-        , base(0)
-        , skip(0)
-        , search(s)
-        , open(false)
+        : type(Type::Search), base(0), skip(0), search(s), open(false)
     {
     }
+
     PItem(bool op)
-        : type(op ? Type::Open : Type::Close)
-        , base(0)
-        , skip(0)
-        , search(DNA())
-        , open(op)
+        : type(op ? Type::Open : Type::Close), base(0), skip(0), search(DNA()), open(op)
     {
     }
 
@@ -101,11 +87,7 @@ struct PItem {
     }
 
     PItem(PItem&& src)
-        : type(std::move(src.type))
-        , base(std::move(src.base))
-        , skip(std::move(src.skip))
-        , search(std::move(src.search))
-        , open(std::move(src.open))
+        : type(std::move(src.type)), base(std::move(src.base)), skip(std::move(src.skip)), search(std::move(src.search)), open(std::move(src.open))
     {
     }
 };

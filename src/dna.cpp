@@ -6,9 +6,10 @@
 #include "dna.hpp"
 
 DNA dna;
-RNA rna;
+//RNA rna;
+size_t n_rna, iteration;
 
-#if defined(TRACE)
+// #if defined(TRACE)
 
 #include <sstream>
 
@@ -36,7 +37,8 @@ to_string(const Environment& env)
     std::stringstream str;
     if (env.empty()) {
         str << "e is empty";
-    } else {
+    }
+    else {
         size_t i = 0;
         for (const auto& e : env) {
             if (i > 0)
@@ -113,7 +115,7 @@ to_string(const Template& templ)
 
     return str.str();
 }
-#endif
+// #endif
 
 static inline bool
 dna_starts_with(const std::string& value)
@@ -138,7 +140,8 @@ DNA asnat(Number n)
     while (n) {
         if (n & 1) {
             result.push_back('C');
-        } else {
+        }
+        else {
             result.push_back('I');
         }
 
@@ -158,15 +161,18 @@ DNA consts()
         dna.pop_front();
         s = consts();
         s.push_front('I');
-    } else if (dna_starts_with("F")) {
+    }
+    else if (dna_starts_with("F")) {
         dna.pop_front();
         s = consts();
         s.push_front('C');
-    } else if (dna_starts_with("P")) {
+    }
+    else if (dna_starts_with("P")) {
         dna.pop_front();
         s = consts();
         s.push_front('F');
-    } else if (dna_starts_with("IC")) {
+    }
+    else if (dna_starts_with("IC")) {
         dna.erase(std::begin(dna), std::begin(dna) + 2);
         s = consts();
         s.push_front('P');
@@ -178,46 +184,57 @@ DNA consts()
 
 void execute()
 {
-    size_t iteration = -1;
+    try {
+        iteration = -1;
+        n_rna = 0;
 
-    while (true) {
-        ++iteration;
+        while (true) {
+            ++iteration;
 
 #if defined(TRACE)
-        std::cerr << "iteration " << iteration << '\n';
-        std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
+            std::cerr << "iteration " << iteration << '\n';
+            std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
 #else
-        if (!(iteration % 1024))
-            std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << rna.size() << '\n';
+            if (!(iteration % 1024))
+                // std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << rna.size() << '\n';
+                std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << n_rna << '\n';
 #endif
 
-        auto pat = pattern();
+            auto pat = pattern();
 
 #if defined(TRACE)
-        std::cerr << "pattern " << to_string(pat) << '\n';
+            std::cerr << "pattern " << to_string(pat) << '\n';
 #endif
 
-        auto templ = templates();
+            auto templ = templates();
 
 #if defined(TRACE)
-        std::cerr << "template " << to_string(templ) << '\n';
+            std::cerr << "template " << to_string(templ) << '\n';
 #endif
 
-        matchreplace(pat, templ);
+            matchreplace(pat, templ);
 
 #if defined(TRACE)
-        std::cerr << "len(rna) = " << rna.size() << "\n\n";
+            // std::cerr << "len(rna) = " << rna.size() << "\n\n";
+            std::cerr << "len(rna) = " << n_rna << "\n\n";
 #endif
+        }
+    }
+    catch (const std::exception& ex) {
+        std::cerr
+            << "exception " << ex.what()
+            << "\niterations " << iteration
+            << "\ndna = " << to_string(dna) << " (" << dna.size() << " bases)"
+            << "\nlen(rna) = " << n_rna << "\n\n";
     }
 }
 
 void finish()
 {
-    for (auto r : rna) {
-        for (auto b : r)
-            std::cout << b;
-        std::cout << '\n';
-    }
+    std::cerr
+        << "iterations " << iteration
+        << "\ndna = " << to_string(dna) << " (" << dna.size() << " bases)"
+        << "\nlen(rna) = " << n_rna << "\n\n";
 
     exit(EXIT_SUCCESS);
 }
@@ -334,40 +351,55 @@ Pattern pattern()
         if (dna_starts_with("C")) {
             dna.pop_front();
             p.push_back(PItem('I'));
-        } else if (dna_starts_with("F")) {
+        }
+        else if (dna_starts_with("F")) {
             dna.pop_front();
             p.push_back(PItem('C'));
-        } else if (dna_starts_with("P")) {
+        }
+        else if (dna_starts_with("P")) {
             dna.pop_front();
             p.push_back(PItem('F'));
-        } else if (dna_starts_with("IC")) {
+        }
+        else if (dna_starts_with("IC")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
             p.push_back(PItem('P'));
-        } else if (dna_starts_with("IP")) {
+        }
+        else if (dna_starts_with("IP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
             auto n = nat();
             p.push_back(PItem(n));
-        } else if (dna_starts_with("IF")) {
+        }
+        else if (dna_starts_with("IF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3); // three bases consumed!
             auto s = consts();
             p.push_back(PItem(s));
-        } else if (dna_starts_with("IIP")) {
+        }
+        else if (dna_starts_with("IIP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
             lvl += 1;
             p.push_back(PItem(true)); // open group
-        } else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
+        }
+        else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
             if (lvl == 0) {
                 return p;
-            } else {
+            }
+            else {
                 lvl -= 1;
                 p.push_back(PItem(false)); // close group
             }
-        } else if (dna_starts_with("III")) {
-            rna.push_back(DNA(std::begin(dna) + 3, std::begin(dna) + 10));
+        }
+        else if (dna_starts_with("III")) {
+            // rna.push_back(DNA(std::begin(dna) + 3, std::begin(dna) + 10));
+            DNA out(std::begin(dna) + 3, std::begin(dna) + 10);
             dna.erase(std::begin(dna), std::begin(dna) + 10);
-        } else {
-            std::cout << "# !!! pattern() Unrecognized DNA sequence!\nBail out!\n";
+            for (auto b : out)
+                std::cout << b;
+            std::cout << std::endl;
+            ++n_rna;
+        }
+        else {
+            // std::cerr << "# !!! pattern() Unrecognized DNA sequence!\nBail out!\n";
             finish();
         }
     }
@@ -377,7 +409,8 @@ DNA protect(Number l, const DNA& d)
 {
     if (l == 0) {
         return d;
-    } else {
+    }
+    else {
         return protect(l - 1, quote(d));
     }
 }
@@ -451,33 +484,44 @@ Template templates()
         if (dna_starts_with("C")) {
             dna.pop_front();
             t.push_back(TItem('I'));
-        } else if (dna_starts_with("F")) {
+        }
+        else if (dna_starts_with("F")) {
             dna.pop_front();
             t.push_back(TItem('C'));
-        } else if (dna_starts_with("P")) {
+        }
+        else if (dna_starts_with("P")) {
             dna.pop_front();
             t.push_back(TItem('F'));
-        } else if (dna_starts_with("IC")) {
+        }
+        else if (dna_starts_with("IC")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
             t.push_back(TItem('P'));
-        } else if (dna_starts_with("IF") || dna_starts_with("IP")) {
+        }
+        else if (dna_starts_with("IF") || dna_starts_with("IP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
             auto l = nat();
             auto n = nat();
             t.push_back(TItem(l, n));
-        } else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
+        }
+        else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
             return t;
-        } else if (dna_starts_with("IIP")) {
+        }
+        else if (dna_starts_with("IIP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
             auto n = nat();
             t.push_back((n));
-        } else if (dna_starts_with("III")) {
+        }
+        else if (dna_starts_with("III")) {
             DNA slice(std::begin(dna) + 3, std::begin(dna) + 11);
-            rna.push_back(slice);
             dna.erase(std::begin(dna), std::begin(dna) + 11);
-        } else {
-            std::cout << "# !!! tempates() Unrecognized DNA sequence!\nBail out!\n";
+            for (auto b : slice)
+                std::cout << b;
+            std::cout << std::endl;
+            ++n_rna;
+        }
+        else {
+            // std::cerr << "# !!! tempates() Unrecognized DNA sequence!\nBail out!\n";
             finish();
         }
     }

@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <iostream>
 
@@ -33,6 +35,12 @@ void read(std::string dna_file)
 
     munmap(pmap, sb.st_size);
     close(fd);
+
+    // remove any whitespace that might be in the input file that was
+    // added to our DNA sequence
+    dna.erase(std::remove_if(std::begin(dna), std::end(dna),
+                  [](DNA::value_type base) { return std::isspace(base); }),
+        std::end(dna));
 }
 
 int main(int argc, char** argv)

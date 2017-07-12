@@ -15,9 +15,7 @@ private:
 
 public:
     Array(size_t rows, size_t cols)
-        : rows_(rows)
-        , cols_(cols)
-        , internal_array(new T[rows_ * cols_])
+        : rows_(rows), cols_(cols), internal_array(new T[rows_ * cols_])
     {
         // rows_ = rows;
         // cols_ = cols;
@@ -25,18 +23,14 @@ public:
     }
 
     Array(const Array& src)
-        : rows_(src.rows_)
-        , cols_(src.cols_)
-        , internal_array(new T[rows_ * cols_])
+        : rows_(src.rows_), cols_(src.cols_), internal_array(new T[rows_ * cols_])
     {
         for (size_t i = 0; i < rows_ * cols_; ++i)
             internal_array[i] = src.internal_array[i];
     }
 
     Array(Array&& src)
-        : rows_(src.rows_)
-        , cols_(src.cols_)
-        , internal_array(src.internal_array)
+        : rows_(src.rows_), cols_(src.cols_), internal_array(src.internal_array)
     {
         src.rows_ = src.cols_ = 0;
         src.internal_array = nullptr;
