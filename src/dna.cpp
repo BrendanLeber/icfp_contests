@@ -2,36 +2,31 @@
 #include <cstdlib>
 #include <iostream>
 #include <iterator>
+#include <sstream>
 
 #include "dna.hpp"
 
-DNA dna;
-//RNA rna;
+DNA dna; /* NOLINT */ // @TODO(bml) - remove warning via refactor
+
 size_t n_rna, iteration;
 
-// #if defined(TRACE)
-
-#include <sstream>
-
-static std::string to_string(const DNA& dna);
-static std::string to_string(const Pattern& pat);
-static std::string to_string(const Template& templ);
-static std::string to_string(const Environment& env);
-
-static std::string
+[[maybe_unused]] std::string
 to_string(const DNA& dna)
 {
     std::stringstream str;
     auto it = std::begin(dna);
-    for (size_t p = 0; p < 10 && it != std::end(dna); ++it, ++p)
-        if (it != std::end(dna))
+    for (size_t p = 0; p < 10 && it != std::end(dna); ++it, ++p) {
+        if (it != std::end(dna)) {
             str << *it;
-    if (it != std::end(dna))
+        }
+    }
+    if (it != std::end(dna)) {
         str << "...";
+    }
     return str.str();
 }
 
-static std::string
+[[maybe_unused]] std::string
 to_string(const Environment& env)
 {
     std::stringstream str;
@@ -41,17 +36,21 @@ to_string(const Environment& env)
     else {
         size_t i = 0;
         for (const auto& e : env) {
-            if (i > 0)
+            if (i > 0) {
                 str << '\n';
+            }
 
             str << "e[" << i++ << "] = ";
 
             auto it = std::begin(e);
-            for (size_t j = 0; j < 10 && it != std::end(e); ++it, ++j)
-                if (it != std::end(e))
+            for (size_t j = 0; j < 10 && it != std::end(e); ++it, ++j) {
+                if (it != std::end(e)) {
                     str << *it;
-            if (it != std::end(e))
+                }
+            }
+            if (it != std::end(e)) {
                 str << "...";
+            }
             str << " (" << e.size() << " bases)";
         }
     }
@@ -59,7 +58,7 @@ to_string(const Environment& env)
     return str.str();
 }
 
-static std::string
+[[maybe_unused]] std::string
 to_string(const Pattern& pat)
 {
     std::stringstream str;
@@ -76,8 +75,9 @@ to_string(const Pattern& pat)
 
         case PItem::Type::Search:
             str << '?';
-            for (auto it = std::begin(p.search); it != std::end(p.search); ++it)
+            for (auto it = std::begin(p.search); it != std::end(p.search); ++it) {
                 str << *it;
+            }
             break;
 
         case PItem::Type::Open:
@@ -93,40 +93,41 @@ to_string(const Pattern& pat)
     return str.str();
 }
 
-static std::string
+[[maybe_unused]] std::string
 to_string(const Template& templ)
 {
     std::stringstream str;
     for (const auto& t : templ) {
         switch (t.type) {
         case TItem::Type::Base:
-            str << t.base;
+            str << t.base; /* NOLINT */
             break;
 
         case TItem::Type::Protection:
-            str << '\\' << t.prot.second;
+            str << '\\' << t.prot.second; /* NOLINT */
             break;
 
         case TItem::Type::Reference:
-            str << '|' << t.ref << '|';
+            str << '|' << t.ref << '|'; /* NOLINT */
             break;
         }
     }
 
     return str.str();
 }
-// #endif
 
 static inline bool
 dna_starts_with(const std::string& value)
 {
-    if (dna.empty() || value.empty())
+    if (dna.empty() || value.empty()) {
         return false;
+    }
 
     auto it = std::begin(dna);
     for (auto base : value) {
-        if (base != *it)
+        if (base != *it) {
             return false;
+        }
         ++it;
     }
 
@@ -137,18 +138,18 @@ DNA asnat(Number n)
 {
     DNA result;
 
-    while (n) {
-        if (n & 1) {
-            result.push_back('C');
+    while (n > 0) {
+        if ((n & 1) != 0) {
+            result.emplace_back('C');
         }
         else {
-            result.push_back('I');
+            result.emplace_back('I');
         }
 
         n /= 2;
     }
 
-    result.push_back('P');
+    result.emplace_back('P');
 
     return result;
 }
@@ -195,9 +196,10 @@ void execute()
             std::cerr << "iteration " << iteration << '\n';
             std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
 #else
-            if (!(iteration % 1024))
+            if ((iteration % 1024u) != 0) {
                 // std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << rna.size() << '\n';
                 std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << n_rna << '\n';
+            }
 #endif
 
             auto pat = pattern();
@@ -229,7 +231,7 @@ void execute()
     }
 }
 
-void finish()
+[[noreturn]] void finish()
 {
     std::cerr
         << "iterations " << iteration
@@ -248,8 +250,9 @@ void matchreplace(const Pattern& pat, const Template& t)
     for (const auto& p : pat) {
         switch (p.type) {
         case PItem::Type::Base:
-            if (dna[i] == p.base)
+            if (dna[i] == p.base) {
                 i += 1;
+            }
             else {
 #if defined(TRACE)
                 std::cerr << "failed match\n";
@@ -282,7 +285,7 @@ void matchreplace(const Pattern& pat, const Template& t)
             break;
 
         case PItem::Type::Close:
-            e.push_back(DNA(std::begin(dna) + c.front(), std::begin(dna) + i));
+            e.emplace_back(DNA(std::begin(dna) + c.front(), std::begin(dna) + i));
             c.pop_front();
             break;
         }
@@ -350,51 +353,50 @@ Pattern pattern()
     while (true) {
         if (dna_starts_with("C")) {
             dna.pop_front();
-            p.push_back(PItem('I'));
+            p.emplace_back(PItem('I'));
         }
         else if (dna_starts_with("F")) {
             dna.pop_front();
-            p.push_back(PItem('C'));
+            p.emplace_back(PItem('C'));
         }
         else if (dna_starts_with("P")) {
             dna.pop_front();
-            p.push_back(PItem('F'));
+            p.emplace_back(PItem('F'));
         }
         else if (dna_starts_with("IC")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
-            p.push_back(PItem('P'));
+            p.emplace_back(PItem('P'));
         }
         else if (dna_starts_with("IP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
             auto n = nat();
-            p.push_back(PItem(n));
+            p.emplace_back(PItem(n));
         }
         else if (dna_starts_with("IF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3); // three bases consumed!
             auto s = consts();
-            p.push_back(PItem(s));
+            p.emplace_back(PItem(s));
         }
         else if (dna_starts_with("IIP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
             lvl += 1;
-            p.push_back(PItem(true)); // open group
+            p.emplace_back(PItem(true)); // open group
         }
         else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
             if (lvl == 0) {
                 return p;
             }
-            else {
-                lvl -= 1;
-                p.push_back(PItem(false)); // close group
-            }
+            lvl -= 1;
+            p.emplace_back(PItem(false)); // close group
         }
         else if (dna_starts_with("III")) {
             // rna.push_back(DNA(std::begin(dna) + 3, std::begin(dna) + 10));
             DNA out(std::begin(dna) + 3, std::begin(dna) + 10);
             dna.erase(std::begin(dna), std::begin(dna) + 10);
-            for (auto b : out)
+            for (auto b : out) {
                 std::cout << b;
+            }
             std::cout << std::endl;
             ++n_rna;
         }
@@ -407,12 +409,7 @@ Pattern pattern()
 
 DNA protect(Number l, const DNA& d)
 {
-    if (l == 0) {
-        return d;
-    }
-    else {
-        return protect(l - 1, quote(d));
-    }
+    return l == 0 ? d : protect(l - 1, quote(d));
 }
 
 DNA quote(const DNA& d)
@@ -458,16 +455,16 @@ void replace(const Template& tpl, const Environment& e)
     for (const auto& t : tpl) {
         switch (t.type) {
         case TItem::Type::Base:
-            r.push_back(t.base);
+            r.push_back(t.base); /* NOLINT */
             break;
 
         case TItem::Type::Protection:
-            p = protect(t.prot.first, e[t.prot.second]);
+            p = protect(t.prot.first, e[t.prot.second]); /* NOLINT */
             r.insert(std::end(r), std::begin(p), std::end(p));
             break;
 
         case TItem::Type::Reference:
-            n = asnat(e[t.ref].size());
+            n = asnat(static_cast<Number>(e[t.ref].size())); /* NOLINT */
             r.insert(std::end(r), std::begin(n), std::end(n));
             break;
         }
@@ -483,25 +480,25 @@ Template templates()
     while (true) {
         if (dna_starts_with("C")) {
             dna.pop_front();
-            t.push_back(TItem('I'));
+            t.emplace_back(TItem('I'));
         }
         else if (dna_starts_with("F")) {
             dna.pop_front();
-            t.push_back(TItem('C'));
+            t.emplace_back(TItem('C'));
         }
         else if (dna_starts_with("P")) {
             dna.pop_front();
-            t.push_back(TItem('F'));
+            t.emplace_back(TItem('F'));
         }
         else if (dna_starts_with("IC")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
-            t.push_back(TItem('P'));
+            t.emplace_back(TItem('P'));
         }
         else if (dna_starts_with("IF") || dna_starts_with("IP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
             auto l = nat();
             auto n = nat();
-            t.push_back(TItem(l, n));
+            t.emplace_back(TItem(l, n));
         }
         else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
@@ -510,13 +507,14 @@ Template templates()
         else if (dna_starts_with("IIP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
             auto n = nat();
-            t.push_back((n));
+            t.emplace_back(n);
         }
         else if (dna_starts_with("III")) {
             DNA slice(std::begin(dna) + 3, std::begin(dna) + 11);
             dna.erase(std::begin(dna), std::begin(dna) + 11);
-            for (auto b : slice)
+            for (auto b : slice) {
                 std::cout << b;
+            }
             std::cout << std::endl;
             ++n_rna;
         }

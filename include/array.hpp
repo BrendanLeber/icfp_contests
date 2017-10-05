@@ -6,7 +6,7 @@
 
 namespace bml {
 
-template <class T>
+template <typename T>
 class Array {
 private:
     size_t rows_;
@@ -83,9 +83,19 @@ public:
         return internal_array[r * cols_ + c];
     }
 
+    inline T& at(int c, int r)
+    {
+        return at(static_cast<size_t>(c), static_cast<size_t>(r));
+    }
+
     inline const T& at(size_t r, size_t c) const
     {
         return internal_array[r * cols_ + c];
+    }
+
+    inline const T& at(int r, int c) const
+    {
+        return at(static_cast<size_t>(r), static_cast<size_t>(c));
     }
 
     void fill(T const& value)
@@ -93,7 +103,5 @@ public:
         for (size_t i = 0; i < rows_ * cols_; ++i)
             internal_array[i] = value;
     }
-
-private:
 };
 }

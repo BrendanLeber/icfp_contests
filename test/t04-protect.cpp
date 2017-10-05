@@ -6,42 +6,47 @@
 #include <utility>
 #include <vector>
 
-#include "execute_functions.hpp"
+#include "dna.hpp"
 
-
-int main(int, char**)
+int main()
 {
-	// protection level, input dna, expected output
-	using Test = std::tuple<Number, std::string, std::string>;
-	std::vector<Test> tests;
-	tests.push_back(std::make_tuple(0, "I", "I"));
-	tests.push_back(std::make_tuple(1, "I", "C"));
-	tests.push_back(std::make_tuple(2, "I", "F"));
-	tests.push_back(std::make_tuple(3, "I", "P"));
-	tests.push_back(std::make_tuple(4, "I", "IC"));
-	tests.push_back(std::make_tuple(5, "I", "CF"));
+    int retval = EXIT_SUCCESS;
 
-	std::cout << "1.." << tests.size() << '\n';
+    // protection level, input dna, expected output
+    using Test = std::tuple<Number, std::string, std::string>;
+    std::vector<Test> tests;
+    tests.emplace_back(std::make_tuple(0, "I", "I"));
+    tests.emplace_back(std::make_tuple(1, "I", "C"));
+    tests.emplace_back(std::make_tuple(2, "I", "F"));
+    tests.emplace_back(std::make_tuple(3, "I", "P"));
+    tests.emplace_back(std::make_tuple(4, "I", "IC"));
+    tests.emplace_back(std::make_tuple(5, "I", "CF"));
 
-	DNA input, output;
-	std::string actual;
+    std::cout << "1.." << tests.size() << '\n';
 
-	for (size_t t = 0; t < tests.size(); ++t) {
-		auto tval = tests[t];
-		input.clear();
-		input.insert(std::end(input), std::begin(std::get<1>(tval)), std::end(std::get<1>(tval)));
+    DNA input, output;
+    std::string actual;
 
-		output = protect(std::get<0>(tval), input);
+    for (size_t t = 0; t < tests.size(); ++t) {
+        auto tval = tests[t];
+        input.clear();
+        input.insert(std::end(input), std::begin(std::get<1>(tval)), std::end(std::get<1>(tval)));
 
-		actual.clear();
-		actual.insert(std::end(actual), std::begin(output), std::end(output));
+        output = protect(std::get<0>(tval), input);
 
-		std::cout
-			<< (std::get<2>(tval) != actual ? "not " : "") << "ok " << t + 1
-			<< " - protect(" << std::get<0>(tval) << ", '" << std::get<1>(tval) << "')"
-			<< " -> " << actual
-			<< " [ " << std::get<2>(tval) << " ]\n";
-	}
+        actual.clear();
+        actual.insert(std::end(actual), std::begin(output), std::end(output));
 
-	return EXIT_SUCCESS;
+        if (std::get<2>(tval) != actual) {
+            retval = EXIT_FAILURE;
+        }
+
+        std::cout
+            << (std::get<2>(tval) != actual ? "not " : "") << "ok " << t + 1
+            << " - protect(" << std::get<0>(tval) << ", '" << std::get<1>(tval) << "')"
+            << " -> " << actual
+            << " [ " << std::get<2>(tval) << " ]\n";
+    }
+
+    return retval;
 }

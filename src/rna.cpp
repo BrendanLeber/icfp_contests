@@ -19,26 +19,31 @@
 // @TODO(bml)
 void dump_state();
 
-const RGB black{0, 0, 0};
-const RGB red{255, 0, 0};
-const RGB green{0, 255, 0};
-const RGB yellow{255, 255, 0};
-const RGB blue{0, 0, 255};
-const RGB magenta{255, 0, 255};
-const RGB cyan{0, 255, 255};
-const RGB white{255, 255, 255};
+const RGB black{0, 0, 0}; /* NOLINT */
+const RGB red{255, 0, 0}; /* NOLINT */
+const RGB green{0, 255, 0}; /* NOLINT */
+const RGB yellow{255, 255, 0}; /* NOLINT */
+const RGB blue{0, 0, 255}; /* NOLINT */
+const RGB magenta{255, 0, 255}; /* NOLINT */
+const RGB cyan{0, 255, 255}; /* NOLINT */
+const RGB white{255, 255, 255}; /* NOLINT */
 
-const Transparency transparent{0};
-const Transparency opaque{255};
+const Transparency transparent{0}; /* NOLINT */
+const Transparency opaque{255}; /* NOLINT */
 
-Bitmap transparentBitmap(BMP_HEIGHT, BMP_WIDTH);
+// @TODO(bml) Fix warnings.  For now bury them.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#pragma clang diagnostic ignored "-Wexit-time-destructors"
+Bitmap transparentBitmap(BMP_HEIGHT, BMP_WIDTH); /* NOLINT */
 
-Bucket bucket;
-Pos position{0, 0};
-Pos mark{0, 0};
+Bucket bucket; /* NOLINT */
+Pos position{0, 0}; /* NOLINT */
+Pos mark{0, 0}; /* NOLINT */
 Dir dir{Dir::E};
-std::deque<Bitmap> bitmaps;
-RNA rna;
+std::deque<Bitmap> bitmaps; /* NOLINT */
+RNA rna; /* NOLINT */
+#pragma clang diagnostic pop
 
 // @TODO(bml)
 void dump_state()
@@ -162,8 +167,9 @@ void build()
         // @TODO(bml) - give some idea of how far we've gotten
         // std::cerr << "\nstep " << counter++ << ": " << r << "  ";
         // dump_state();
-        if (!(counter % (1024 * 8)))
+        if ((counter % (1024 * 8)) != 0) {
             std::cerr << counter << " of " << rna.size() << " (" << (counter * 100 / rna.size()) << "%)\n";
+        }
         counter++;
     }
 
@@ -192,22 +198,23 @@ Pixel currentPixel()
             greens.push_back(std::get<1>(color.color));
             blues.push_back(std::get<2>(color.color));
         }
-        else
+        else {
             alphas.push_back(color.alpha);
+        }
     }
 
-    auto red = average(reds, 0);
-    auto green = average(greens, 0);
-    auto blue = average(blues, 0);
-    auto alpha = average(alphas, 255);
+    auto t_red = average(reds, 0);
+    auto t_green = average(greens, 0);
+    auto t_blue = average(blues, 0);
+    auto t_alpha = average(alphas, 255);
 
-    double arange = static_cast<double>(alpha) / 255.0;
+    double arange = static_cast<double>(t_alpha) / 255.0;
 
-    auto new_r = static_cast<Component>(std::floor(static_cast<double>(red) * arange));
-    auto new_g = static_cast<Component>(std::floor(static_cast<double>(green) * arange));
-    auto new_b = static_cast<Component>(std::floor(static_cast<double>(blue) * arange));
+    auto new_r = static_cast<Component>(std::floor(static_cast<double>(t_red) * arange));
+    auto new_g = static_cast<Component>(std::floor(static_cast<double>(t_green) * arange));
+    auto new_b = static_cast<Component>(std::floor(static_cast<double>(t_blue) * arange));
 
-    return std::make_pair(std::make_tuple(new_r, new_g, new_b), alpha);
+    return std::make_pair(std::make_tuple(new_r, new_g, new_b), t_alpha);
 }
 
 Component average(const std::vector<Component>& values, Component def)
@@ -215,11 +222,10 @@ Component average(const std::vector<Component>& values, Component def)
     if (values.empty()) {
         return def;
     }
-    else {
-        double sum = static_cast<double>(std::accumulate(std::begin(values), std::end(values), 0));
-        double len = static_cast<double>(values.size());
-        return static_cast<Component>(std::floor(sum / len));
-    }
+
+    auto sum = static_cast<double>(std::accumulate(std::begin(values), std::end(values), 0));
+    auto len = static_cast<double>(values.size());
+    return static_cast<Component>(std::floor(sum / len));
 }
 
 static inline Coord mod(Coord a, Coord b)
@@ -313,7 +319,7 @@ void setPixel(Pos p)
     Coord x, y;
     std::tie(x, y) = p;
 
-    bitmaps[0].at(x, y) = currentPixel();
+    bitmaps[0].at(static_cast<size_t>(x), static_cast<size_t>(y)) = currentPixel();
 }
 
 void line(Pos p0, Pos p1)
@@ -379,8 +385,9 @@ void fill(Pos p, Pixel initial)
 		}
 	}
 #else
-    if (getPixel(p) != initial)
+    if (getPixel(p) != initial) {
         return;
+    }
 
     std::deque<Pos> work;
     work.push_back(p);
@@ -390,26 +397,30 @@ void fill(Pos p, Pixel initial)
         work.pop_front();
 
         auto west = node;
-        while (west.first > 0 && getPixel(std::make_pair(west.first - 1, west.second)) == initial)
+        while (west.first > 0 && getPixel(std::make_pair(west.first - 1, west.second)) == initial) {
             west.first--;
+        }
 
         auto east = node;
-        while (east.first < 599 && getPixel(std::make_pair(east.first + 1, east.second)) == initial)
+        while (east.first < 599 && getPixel(std::make_pair(east.first + 1, east.second)) == initial) {
             east.first++;
+        }
 
         for (Pos pos = west; pos.first <= east.first; ++pos.first) {
             setPixel(pos);
 
             if (pos.second > 0) {
                 auto north = std::make_pair(pos.first, pos.second - 1);
-                if (getPixel(north) == initial)
-                    work.push_back(north);
+                if (getPixel(north) == initial) {
+                    work.emplace_back(north);
+                }
             }
 
             if (pos.second < 599) {
                 auto south = std::make_pair(pos.first, pos.second + 1);
-                if (getPixel(south) == initial)
-                    work.push_back(south);
+                if (getPixel(south) == initial) {
+                    work.emplace_back(south);
+                }
             }
         }
     }
@@ -418,8 +429,9 @@ void fill(Pos p, Pixel initial)
 
 void addBitmap(Bitmap& b)
 {
-    if (bitmaps.size() < 10)
+    if (bitmaps.size() < 10) {
         bitmaps.push_front(b);
+    }
 }
 
 void compose()
@@ -428,8 +440,8 @@ void compose()
     // draw(bitmaps[1]);
 
     if (bitmaps.size() >= 2) {
-        for (int x = 0; x < 600; ++x) {
-            for (int y = 0; y < 600; ++y) {
+        for (size_t x = 0; x < 600; ++x) {
+            for (size_t y = 0; y < 600; ++y) {
                 // let ((r0, g0, b0), a0) <- bitmaps[0].at(x, y);
                 auto const& p0 = bitmaps[0].at(x, y);
                 Component r0, g0, b0;
@@ -464,8 +476,8 @@ void clip()
     // draw(bitmaps[1]);
 
     if (bitmaps.size() >= 2) {
-        for (int x = 0; x < 600; ++x) {
-            for (int y = 0; y < 600; ++y) {
+        for (size_t x = 0; x < 600; ++x) {
+            for (size_t y = 0; y < 600; ++y) {
                 // let ((r0, g0, b0), a0) <- bitmaps[0].at(x, y);
                 auto const& p0 = bitmaps[0].at(x, y);
                 Component r0, g0, b0;
@@ -506,18 +518,21 @@ void draw(const Bitmap& bmp)
 #endif
 
     auto fp = std::fopen(ss.str().c_str(), "wb");
-    if (!fp)
+    if (fp == nullptr) {
         throw std::runtime_error(std::strerror(errno));
+    }
 
-    auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png_ptr)
+    auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    if (png_ptr == nullptr) {
         throw std::runtime_error("could not allocate PNG write struct");
+    }
 
     auto info_ptr = png_create_info_struct(png_ptr);
-    if (!info_ptr)
+    if (info_ptr == nullptr) {
         throw std::runtime_error("could not allocate PNG info struct");
+    }
 
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    if (setjmp(png_jmpbuf(png_ptr))) { /* NOLINT */
         throw std::runtime_error("error during PNG creation");
     }
 
@@ -528,7 +543,7 @@ void draw(const Bitmap& bmp)
 
     png_write_info(png_ptr, info_ptr);
 
-    png_bytep png_row = new png_byte[3 * bmp.cols()];
+    auto png_row = new png_byte[3 * bmp.cols()];
 
     for (size_t row = 0; row < bmp.rows(); ++row) {
         png_bytep png;
@@ -537,9 +552,9 @@ void draw(const Bitmap& bmp)
             auto pixel = bmp.at(row, col);
             Component r, g, b;
             std::tie(r, g, b) = pixel.first;
-            png[0] = r;
-            png[1] = g;
-            png[2] = b;
+            png[0] = static_cast<png_byte>(r);
+            png[1] = static_cast<png_byte>(g);
+            png[2] = static_cast<png_byte>(b);
         }
 
         png_write_row(png_ptr, png_row);
@@ -549,6 +564,6 @@ void draw(const Bitmap& bmp)
 
     std::fclose(fp);
     png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
-    png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+    png_destroy_write_struct(&png_ptr, nullptr);
     delete[] png_row;
 }

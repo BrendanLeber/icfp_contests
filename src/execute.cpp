@@ -11,22 +11,24 @@
 
 #include "dna.hpp"
 
-void read(std::string dna_file)
+void read(std::string const& dna_file)
 {
-    auto fd = open(dna_file.c_str(), O_RDONLY);
+    auto fd = open(dna_file.c_str(), O_RDONLY); /* NOLINT */
     if (fd == -1) {
         perror("open");
         exit(EXIT_FAILURE);
     }
 
-    struct stat sb;
+    struct stat sb {
+        0
+    };
     if (fstat(fd, &sb) == -1) {
         perror("fstat");
         exit(EXIT_FAILURE);
     }
 
-    auto pmap = reinterpret_cast<Base*>(mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0));
-    if (pmap == MAP_FAILED) {
+    auto pmap = static_cast<Base*>(mmap(nullptr, sb.st_size, PROT_READ, MAP_SHARED, fd, 0));
+    if (pmap == MAP_FAILED) { /* NOLINT */
         perror("mmap");
         exit(EXIT_FAILURE);
     }
@@ -46,12 +48,13 @@ void read(std::string dna_file)
 int main(int argc, char** argv)
 {
     if (argc < 2) {
-        std::cerr << "Syntax: " << argv[0] << " <dna-file>...\n";
+        std::cerr << "Syntax: " << argv[0] << " <dna-file>...\n"; /* NOLINT */
         exit(EXIT_FAILURE);
     }
 
-    for (int arg = 1; arg < argc; ++arg)
-        read(argv[arg]);
+    for (int arg = 1; arg < argc; ++arg) {
+        read(argv[arg]); /* NOLINT */
+    }
 
     execute();
 

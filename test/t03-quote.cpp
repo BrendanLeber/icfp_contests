@@ -5,38 +5,43 @@
 #include <utility>
 #include <vector>
 
-#include "execute_functions.hpp"
+#include "dna.hpp"
 
-
-int main(int, char**)
+int main()
 {
-	std::vector<std::pair<std::string, std::string>> tests;
-	tests.push_back(std::make_pair("I", "C"));
-	tests.push_back(std::make_pair("C", "F"));
-	tests.push_back(std::make_pair("F", "P"));
-	tests.push_back(std::make_pair("P", "IC"));
-	tests.push_back(std::make_pair("ICFP", "CFPIC"));
+    int retval = EXIT_SUCCESS;
 
-	std::cout << "1.." << tests.size() << '\n';
+    std::vector<std::pair<std::string, std::string>> tests;
+    tests.emplace_back(std::make_pair("I", "C"));
+    tests.emplace_back(std::make_pair("C", "F"));
+    tests.emplace_back(std::make_pair("F", "P"));
+    tests.emplace_back(std::make_pair("P", "IC"));
+    tests.emplace_back(std::make_pair("ICFP", "CFPIC"));
 
-	DNA input, output;
-	std::string actual;
+    std::cout << "1.." << tests.size() << '\n';
 
-	for (size_t t = 0; t < tests.size(); ++t) {
-		input.clear();
-		input.insert(std::end(input), std::begin(tests[t].first), std::end(tests[t].first));
+    DNA input, output;
+    std::string actual;
 
-		output = quote(input);
+    for (size_t t = 0; t < tests.size(); ++t) {
+        input.clear();
+        input.insert(std::end(input), std::begin(tests[t].first), std::end(tests[t].first));
 
-		actual.clear();
-		actual.insert(std::end(actual), std::begin(output), std::end(output));
+        output = quote(input);
 
-		std::cout
-			<< (tests[t].second != actual ? "not " : "") << "ok " << t + 1
-			<< " - " << tests[t].first
-			<< " -> " << actual
-			<< " (" << tests[t].second << ")\n";
-	}
+        actual.clear();
+        actual.insert(std::end(actual), std::begin(output), std::end(output));
 
-	return EXIT_SUCCESS;
+        if (tests[t].second != actual) {
+            retval = EXIT_FAILURE;
+        }
+
+        std::cout
+            << (tests[t].second != actual ? "not " : "") << "ok " << t + 1
+            << " - " << tests[t].first
+            << " -> " << actual
+            << " (" << tests[t].second << ")\n";
+    }
+
+    return retval;
 }

@@ -12,10 +12,10 @@ using DNA = std::deque<Base>;
 
 using RNA = std::deque<DNA>;
 
-DNA asnat(Number N);
+DNA asnat(Number n);
 DNA consts();
 void execute();
-void finish();
+[[noreturn]] void finish();
 Number nat();
 
 struct TItem {
@@ -93,8 +93,12 @@ struct PItem {
 };
 
 using Pattern = std::deque<PItem>;
-
 using Environment = std::deque<DNA>;
+
+std::string to_string(const DNA& dna);
+std::string to_string(const Pattern& pat);
+std::string to_string(const Template& templ);
+std::string to_string(const Environment& env);
 
 extern DNA dna;
 extern RNA rna;

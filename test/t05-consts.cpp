@@ -5,38 +5,43 @@
 #include <utility>
 #include <vector>
 
-#include "execute_functions.hpp"
+#include "dna.hpp"
 
-
-int main(int, char**)
+int main()
 {
-	std::vector<std::pair<std::string, std::string>> tests;
-	tests.push_back(std::make_pair("C", "I"));
-	tests.push_back(std::make_pair("F", "C"));
-	tests.push_back(std::make_pair("P", "F"));
-	tests.push_back(std::make_pair("IC", "P"));
-	tests.push_back(std::make_pair("ICFP", "PCF"));
+    int retval = EXIT_SUCCESS;
 
-	std::cout << "1.." << tests.size() << '\n';
+    std::vector<std::pair<std::string, std::string>> tests;
+    tests.emplace_back(std::make_pair("C", "I"));
+    tests.emplace_back(std::make_pair("F", "C"));
+    tests.emplace_back(std::make_pair("P", "F"));
+    tests.emplace_back(std::make_pair("IC", "P"));
+    tests.emplace_back(std::make_pair("ICFP", "PCF"));
 
-	DNA input, output;
-	std::string actual;
+    std::cout << "1.." << tests.size() << '\n';
 
-	for (size_t t = 0; t < tests.size(); ++t) {
-		dna.clear();
-		dna.insert(std::end(dna), std::begin(tests[t].first), std::end(tests[t].first));
+    DNA input, output;
+    std::string actual;
 
-		output = consts();
+    for (size_t t = 0; t < tests.size(); ++t) {
+        dna.clear();
+        dna.insert(std::end(dna), std::begin(tests[t].first), std::end(tests[t].first));
 
-		actual.clear();
-		actual.insert(std::end(actual), std::begin(output), std::end(output));
+        output = consts();
 
-		std::cout
-			<< (tests[t].second != actual ? "not " : "") << "ok " << t + 1
-			<< " - " << tests[t].first
-			<< " -> " << actual
-			<< " (" << tests[t].second << ")\n";
-	}
+        actual.clear();
+        actual.insert(std::end(actual), std::begin(output), std::end(output));
 
-	return EXIT_SUCCESS;
+        if (tests[t].second != actual) {
+            retval = EXIT_FAILURE;
+        }
+
+        std::cout
+            << (tests[t].second != actual ? "not " : "") << "ok " << t + 1
+            << " - " << tests[t].first
+            << " -> " << actual
+            << " (" << tests[t].second << ")\n";
+    }
+
+    return retval;
 }

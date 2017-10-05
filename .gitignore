@@ -1,7 +1,8 @@
-build
+debug
+release
 endo.dna
+endo.rna
 *~
 \#*#
 .\#*
-bin/execute
 endo*.png
