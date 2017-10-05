@@ -13,22 +13,30 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-add_definitions(-DTRACE)
+if(DO_TRACE)
+  add_definitions(-DTRACE)
+endif()
+
 
 include_directories(include)
 
-add_executable(build src/build.cpp src/rna.cpp)
+add_library(dna OBJECT src/dna.cpp)
+add_library(rna OBJECT src/rna.cpp)
+
+
+# DNA -> execute -> RNA -> build -> IMAGE
+add_executable(execute src/execute.cpp $<TARGET_OBJECTS:dna>)
+
+add_executable(build src/build.cpp $<TARGET_OBJECTS:rna>)
 target_link_libraries(build z png)
 
-add_executable(execute src/execute.cpp src/dna.cpp)
-target_link_libraries(execute z png)
 
 enable_testing()
 
 file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/t*-*.cpp)
 foreach(test_src ${TEST_SRCS})
   get_filename_component(test_name ${test_src} NAME_WE)
-  add_executable(${test_name} ${test_src} ${CMAKE_CURRENT_SOURCE_DIR}/src/dna.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/rna.cpp)
+  add_executable(${test_name} ${test_src} $<TARGET_OBJECTS:dna> $<TARGET_OBJECTS:rna>)
   target_link_libraries(${test_name} z png)
   target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
   add_test(NAME ${test_name} COMMAND ${test_name})

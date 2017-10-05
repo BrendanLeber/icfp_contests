@@ -196,7 +196,7 @@ void execute()
             std::cerr << "iteration " << iteration << '\n';
             std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
 #else
-            if ((iteration % 1024u) != 0) {
+            if ((iteration % 1024u) == 0) {
                 // std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << rna.size() << '\n';
                 std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << n_rna << '\n';
             }
