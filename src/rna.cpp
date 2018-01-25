@@ -19,17 +19,17 @@
 // @TODO(bml)
 void dump_state();
 
-const RGB black{0, 0, 0}; /* NOLINT */
-const RGB red{255, 0, 0}; /* NOLINT */
-const RGB green{0, 255, 0}; /* NOLINT */
-const RGB yellow{255, 255, 0}; /* NOLINT */
-const RGB blue{0, 0, 255}; /* NOLINT */
-const RGB magenta{255, 0, 255}; /* NOLINT */
-const RGB cyan{0, 255, 255}; /* NOLINT */
-const RGB white{255, 255, 255}; /* NOLINT */
+const RGB black{ 0, 0, 0 }; /* NOLINT */
+const RGB red{ 255, 0, 0 }; /* NOLINT */
+const RGB green{ 0, 255, 0 }; /* NOLINT */
+const RGB yellow{ 255, 255, 0 }; /* NOLINT */
+const RGB blue{ 0, 0, 255 }; /* NOLINT */
+const RGB magenta{ 255, 0, 255 }; /* NOLINT */
+const RGB cyan{ 0, 255, 255 }; /* NOLINT */
+const RGB white{ 255, 255, 255 }; /* NOLINT */
 
-const Transparency transparent{0}; /* NOLINT */
-const Transparency opaque{255}; /* NOLINT */
+const Transparency transparent{ 0 }; /* NOLINT */
+const Transparency opaque{ 255 }; /* NOLINT */
 
 // @TODO(bml) Fix warnings.  For now bury them.
 #pragma clang diagnostic push
@@ -38,9 +38,9 @@ const Transparency opaque{255}; /* NOLINT */
 Bitmap transparentBitmap(BMP_HEIGHT, BMP_WIDTH); /* NOLINT */
 
 Bucket bucket; /* NOLINT */
-Pos position{0, 0}; /* NOLINT */
-Pos mark{0, 0}; /* NOLINT */
-Dir dir{Dir::E};
+Pos position{ 0, 0 }; /* NOLINT */
+Pos mark{ 0, 0 }; /* NOLINT */
+Dir dir{ Dir::E };
 std::deque<Bitmap> bitmaps; /* NOLINT */
 RNA rna; /* NOLINT */
 #pragma clang diagnostic pop

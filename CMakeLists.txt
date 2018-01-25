@@ -13,6 +13,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+set(DO_TRACE OFF CACHE BOOL "Enable trace output during execution.")
 if(DO_TRACE)
   add_definitions(-DTRACE)
 endif()

@@ -104,4 +104,4 @@ public:
             internal_array[i] = value;
     }
 };
-}
+} // namespace bml
