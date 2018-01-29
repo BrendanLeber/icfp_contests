@@ -5,3 +5,8 @@ build
 bin/um
 CMakeCache.txt
 CMakeFiles
+debug
+release
+endo.dna
+endo.rna
+endo*.png
