@@ -1,0 +1,3 @@
+[submodule "lambda-duct"]
+	path = 2017-lambda_punter/lambda-duct
+	url = https://github.com/icfpcontest2017/lambda-duct.git
