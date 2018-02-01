@@ -7,17 +7,13 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <numeric>
 #include <sstream>
+#include <stack>
 #include <stdexcept>
 
-#include <png.h>
-#include <zlib.h>
-
-#include "rna.hpp"
-
-// @TODO(bml)
-void dump_state();
+#include "build.hpp"
 
 const RGB black{ 0, 0, 0 }; /* NOLINT */
 const RGB red{ 255, 0, 0 }; /* NOLINT */
@@ -35,9 +31,9 @@ const Transparency opaque{ 255 }; /* NOLINT */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
-Bitmap transparentBitmap(BMP_HEIGHT, BMP_WIDTH); /* NOLINT */
 
 Bucket bucket; /* NOLINT */
+
 Pos position{ 0, 0 }; /* NOLINT */
 Pos mark{ 0, 0 }; /* NOLINT */
 Dir dir{ Dir::E };
@@ -45,176 +41,54 @@ std::deque<Bitmap> bitmaps; /* NOLINT */
 RNA rna; /* NOLINT */
 #pragma clang diagnostic pop
 
-// @TODO(bml)
-void dump_state()
-{
-    std::cerr << "position { " << position.first << ", " << position.second << " }  ";
-    std::cerr << "mark { " << mark.first << ", " << mark.second << " }  ";
-
-    std::cerr << "dir ";
-    switch (dir) {
-    case Dir::N:
-        std::cerr << "North  ";
-        break;
-    case Dir::E:
-        std::cerr << "East   ";
-        break;
-    case Dir::S:
-        std::cerr << "South  ";
-        break;
-    case Dir::W:
-        std::cerr << "West   ";
-        break;
-    }
-
-    std::cerr << "bucket:";
-    if (bucket.empty()) {
-        std::cerr << " <nil>\n";
-    }
-    else {
-        for (const auto& color : bucket) {
-            if (color.type == Color::Type::Color) {
-                Component r, g, b;
-                std::tie(r, g, b) = color.color;
-
-                std::cerr << " { " << r << ' ' << g << ' ' << b << " }";
-            }
-            else {
-                std::cerr << ' ' << color.alpha;
-            }
-        }
-    }
-
-    std::cerr << '\n';
-}
+void internal_draw(const Bitmap& bmp);
+void internal_fill(Pos const& p, Pixel const& initial, Pixel const& current);
+void internal_setPixel(Pos const& p, Pixel const& pixel);
+void internal_line(Pos p0, Pos p1, Pixel const& pixel);
 
 void rna_init()
 {
-    transparentBitmap.fill(std::make_pair(std::make_tuple(0, 0, 0), 0));
     bitmaps.clear();
-    bitmaps.push_back(transparentBitmap);
-}
-
-void build()
-{
-    // @TODO(BML) - give some idea of how far we've gotten
-    static size_t counter = 0;
-    // std::cerr << "initial state: ";
-    // dump_state();
-
-    for (const auto& r : rna) {
-        if (r == "PIPIIIC") {
-            addColor(black);
-        }
-        else if (r == "PIPIIIP") {
-            addColor(red);
-        }
-        else if (r == "PIPIICC") {
-            addColor(green);
-        }
-        else if (r == "PIPIICF") {
-            addColor(yellow);
-        }
-        else if (r == "PIPIICP") {
-            addColor(blue);
-        }
-        else if (r == "PIPIIFC") {
-            addColor(magenta);
-        }
-        else if (r == "PIPIIFF") {
-            addColor(cyan);
-        }
-        else if (r == "PIPIIPC") {
-            addColor(white);
-        }
-        else if (r == "PIPIIPF") {
-            addColor(transparent);
-        }
-        else if (r == "PIPIIPP") {
-            addColor(opaque);
-        }
-        else if (r == "PIIPICP") {
-            bucket.clear();
-        }
-        else if (r == "PIIIIIP") {
-            position = move(position, dir);
-        }
-        else if (r == "PCCCCCP") {
-            dir = turnCounterClockwise(dir);
-        }
-        else if (r == "PFFFFFP") {
-            dir = turnClockwise(dir);
-        }
-        else if (r == "PCCIFFP") {
-            mark = position;
-        }
-        else if (r == "PFFICCP") {
-            line(position, mark);
-        }
-        else if (r == "PIIPIIP") {
-            tryfill();
-        }
-        else if (r == "PCCPFFP") {
-            addBitmap(transparentBitmap);
-        }
-        else if (r == "PFFPCCP") {
-            compose();
-        }
-        else if (r == "PFFICCF") {
-            clip();
-        }
-
-        // @TODO(bml) - give some idea of how far we've gotten
-        // std::cerr << "\nstep " << counter++ << ": " << r << "  ";
-        // dump_state();
-        if ((counter % (1024 * 8)) != 0) {
-            std::cerr << counter << " of " << rna.size() << " (" << (counter * 100 / rna.size()) << "%)\n";
-        }
-        counter++;
-    }
-
-    draw(bitmaps[0]);
-
-    // dump_state();  // @TODO(bml)
+    bitmaps.emplace_back(Bitmap {});
 }
 
 void addColor(Color c)
 {
-    bucket.push_back(c);
+	bucket.push_back(c);
 }
 
 Pixel currentPixel()
 {
-    std::vector<Component> reds, greens, blues, alphas;
+	std::vector<Component> reds, greens, blues, alphas;
 
-    reds.reserve(bucket.size());
-    greens.reserve(bucket.size());
-    blues.reserve(bucket.size());
-    alphas.reserve(bucket.size());
+	reds.reserve(bucket.size());
+	greens.reserve(bucket.size());
+	blues.reserve(bucket.size());
+	alphas.reserve(bucket.size());
 
-    for (const auto& color : bucket) {
-        if (color.type == Color::Type::Color) {
-            reds.push_back(std::get<0>(color.color));
-            greens.push_back(std::get<1>(color.color));
-            blues.push_back(std::get<2>(color.color));
-        }
-        else {
-            alphas.push_back(color.alpha);
-        }
-    }
+	for (auto const& color : bucket) {
+		if (color.type == Color::Type::Color) {
+			reds.push_back(std::get<0>(color.color));
+			greens.push_back(std::get<1>(color.color));
+			blues.push_back(std::get<2>(color.color));
+		}
+		else {
+			alphas.push_back(color.alpha);
+		}
+	}
 
-    auto t_red = average(reds, 0);
-    auto t_green = average(greens, 0);
-    auto t_blue = average(blues, 0);
-    auto t_alpha = average(alphas, 255);
+	auto t_red = average(reds, 0);
+	auto t_green = average(greens, 0);
+	auto t_blue = average(blues, 0);
+	auto t_alpha = average(alphas, 255);
 
-    double arange = static_cast<double>(t_alpha) / 255.0;
+	auto arange = static_cast<float>(t_alpha) / 255.0;
 
-    auto new_r = static_cast<Component>(std::floor(static_cast<double>(t_red) * arange));
-    auto new_g = static_cast<Component>(std::floor(static_cast<double>(t_green) * arange));
-    auto new_b = static_cast<Component>(std::floor(static_cast<double>(t_blue) * arange));
+	auto new_r = static_cast<Component>(std::floor(static_cast<float>(t_red) * arange));
+	auto new_g = static_cast<Component>(std::floor(static_cast<float>(t_green) * arange));
+	auto new_b = static_cast<Component>(std::floor(static_cast<float>(t_blue) * arange));
 
-    return std::make_pair(std::make_tuple(new_r, new_g, new_b), t_alpha);
+	return std::make_pair(std::make_tuple(new_r, new_g, new_b), t_alpha);
 }
 
 Component average(const std::vector<Component>& values, Component def)
@@ -223,8 +97,8 @@ Component average(const std::vector<Component>& values, Component def)
         return def;
     }
 
-    auto sum = static_cast<double>(std::accumulate(std::begin(values), std::end(values), 0));
-    auto len = static_cast<double>(values.size());
+    auto sum = static_cast<float>(std::accumulate(std::begin(values), std::end(values), 0.0));
+    auto len = static_cast<float>(values.size());
     return static_cast<Component>(std::floor(sum / len));
 }
 
@@ -319,10 +193,28 @@ void setPixel(Pos p)
     Coord x, y;
     std::tie(x, y) = p;
 
-    bitmaps[0].at(static_cast<size_t>(x), static_cast<size_t>(y)) = currentPixel();
+    internal_setPixel(p, currentPixel());
 }
 
+void internal_setPixel(Pos const& p, Pixel const& pixel)
+{
+    Coord x, y;
+    std::tie(x, y) = p;
+
+    bitmaps[0].at(static_cast<size_t>(x), static_cast<size_t>(y)) = pixel;
+}
+	
+
 void line(Pos p0, Pos p1)
+{
+#if defined(TRACE)
+        std::cout << "line({" << p0.first << ' ' << p0.second << "}, {" << p1.first << ' ' << p1.second << "})\n";
+#endif
+
+	internal_line(p0, p1, currentPixel());
+}
+
+void internal_line(Pos p0, Pos p1, Pixel const& pixel)
 {
     Coord x0, y0, x1, y1;
     std::tie(x0, y0) = p0;
@@ -331,20 +223,23 @@ void line(Pos p0, Pos p1)
     auto deltax = x1 - x0;
     auto deltay = y1 - y0;
 
-    auto d = static_cast<double>(std::max(std::abs(deltax), std::abs(deltay)));
+    auto d = static_cast<float>(std::max(std::abs(deltax), std::abs(deltay)));
 
-    double c = (deltax * deltay <= 0) ? 1.0 : 0.0;
+    float c = (deltax * deltay <= 0) ? 1.0 : 0.0;
 
-    double x = static_cast<double>(x0) * d + std::floor((d - c) / 2.0);
-    double y = static_cast<double>(y0) * d + std::floor((d - c) / 2.0);
+    auto x = static_cast<float>(x0) * d + std::floor((d - c) / 2.0);
+    auto y = static_cast<float>(y0) * d + std::floor((d - c) / 2.0);
 
     for (Coord t = 0; t < static_cast<Coord>(d); ++t) {
-        setPixel(std::make_pair(static_cast<Coord>(std::floor(x / d)), static_cast<Coord>(std::floor(y / d))));
+	    internal_setPixel(
+		    std::make_pair(static_cast<Coord>(std::floor(x / d)),
+			static_cast<Coord>(std::floor(y / d))),
+		    pixel);
         x += deltax;
         y += deltay;
     }
 
-    setPixel(std::make_pair(x1, y1));
+    internal_setPixel(std::make_pair(x1, y1), pixel);
 }
 
 void tryfill()
@@ -352,92 +247,87 @@ void tryfill()
     auto n = currentPixel();
     auto o = getPixel(position);
     if (n != o) {
-        // draw(bitmaps[0]);  // @TODO(bml) - save what might be overwritten
+#if defined(SAVE_BITMAPS)
+            internal_draw(bitmaps[0]);  // save what might be overwritten
+#endif
         fill(position, o);
     }
 }
 
 void fill(Pos p, Pixel initial)
 {
-// Component r, g, b;
-// std::tie(r, g, b) = initial.first;
-// auto a = initial.second;
-// std::cerr << "fill({ " << p.first << ' ' << p.second << " }, { " << r << ' ' << g << ' ' << b << " | " << a << " })\n";
-
-#if 0
-	Pos::first_type x;
-	Pos::second_type y;
-	std::tie(x, y) = p;
-
-	if (getPixel(p) == initial) {
-		setPixel(p);
-		if (x > 0) {
-			fill(std::make_pair(x - 1, y), initial);
-		}
-		if (x < 599) {
-			fill(std::make_pair(x + 1, y), initial);
-		}
-		if (y > 0) {
-			fill(std::make_pair(x, y - 1), initial);
-		}
-		if (y < 599) {
-			fill(std::make_pair(x, y + 1), initial);
-		}
-	}
-#else
-    if (getPixel(p) != initial) {
-        return;
-    }
-
-    std::deque<Pos> work;
-    work.push_back(p);
-
-    while (!work.empty()) {
-        auto node = work.front();
-        work.pop_front();
-
-        auto west = node;
-        while (west.first > 0 && getPixel(std::make_pair(west.first - 1, west.second)) == initial) {
-            west.first--;
-        }
-
-        auto east = node;
-        while (east.first < 599 && getPixel(std::make_pair(east.first + 1, east.second)) == initial) {
-            east.first++;
-        }
-
-        for (Pos pos = west; pos.first <= east.first; ++pos.first) {
-            setPixel(pos);
-
-            if (pos.second > 0) {
-                auto north = std::make_pair(pos.first, pos.second - 1);
-                if (getPixel(north) == initial) {
-                    work.emplace_back(north);
-                }
-            }
-
-            if (pos.second < 599) {
-                auto south = std::make_pair(pos.first, pos.second + 1);
-                if (getPixel(south) == initial) {
-                    work.emplace_back(south);
-                }
-            }
-        }
-    }
+#if defined(TRACE)
+        Component r, g, b;
+        std::tie(r, g, b) = initial.first;
+        auto a = initial.second;
+        std::cout << "fill({ " << p.first << ' ' << p.second << " }, { " << r << ' ' << g << ' ' << b << " | " << a << " })\n";
 #endif
+
+    if (getPixel(p) == initial) {
+	auto current = currentPixel();
+	internal_fill(p, initial, current);
+    }
 }
 
-void addBitmap(Bitmap& b)
+void internal_fill(Pos const& p, Pixel const& initial, Pixel const& current)
+{
+    std::stack<Pos> work;
+    work.emplace(p);
+
+    while (!work.empty()) {
+        auto node = work.top();
+        work.pop();
+	internal_setPixel(node, current);
+
+	if (node.second > 0) {
+		auto north = std::make_pair(node.first, node.second - 1);
+		if (getPixel(north) == initial) {
+			work.emplace(north);
+		}
+	}
+	
+        if (node.first < 599) {
+		auto east = std::make_pair(node.first + 1, node.second);
+		if (getPixel(east) == initial) {
+			work.emplace(east);
+		}
+        }
+
+	if (node.second < 599) {
+		auto south = std::make_pair(node.first, node.second + 1);
+		if (getPixel(south) == initial) {
+			work.emplace(south);
+		}
+	}
+
+	if (node.first > 0) {
+		auto west = std::make_pair(node.first - 1, node.second);
+		if (getPixel(west) == initial) {
+			work.emplace(west);
+		}
+	}
+    }
+}
+
+void addBitmap()
 {
     if (bitmaps.size() < 10) {
-        bitmaps.push_front(b);
+	    bitmaps.emplace_front(Bitmap{});
+    }
+    else {
+            std::cout << "not adding new transparent bitmap as our sequence is full.\n";
     }
 }
 
 void compose()
 {
-    // @TODO(bml) - write bitmap that might be lost
-    // draw(bitmaps[1]);
+#if defined(TRACE)
+        std::cout << "compose()\n";
+#endif
+
+#if defined(SAVE_BITMAPS)
+	internal_draw(bitmaps[1]);
+#endif
 
     if (bitmaps.size() >= 2) {
         for (size_t x = 0; x < 600; ++x) {
@@ -463,8 +353,9 @@ void compose()
             }
         }
 
-        // @TODO(bml) - write bitmap about to be lost
-        // draw(bitmaps[0]);
+#if defined(SAVE_BITMAPS)
+        internal_draw(bitmaps[0]);
+#endif
 
         bitmaps.pop_front();
     }
@@ -472,8 +363,13 @@ void compose()
 
 void clip()
 {
-    // @TODO(bml) - write bitmap that might be lost
-    // draw(bitmaps[1]);
+#if defined(TRACE)
+        std::cout << "clip()\n";
+#endif
+
+#if defined(SAVE_BITMAPS)
+	internal_draw(bitmaps[1]);
+#endif
 
     if (bitmaps.size() >= 2) {
         for (size_t x = 0; x < 600; ++x) {
@@ -499,71 +395,32 @@ void clip()
             }
         }
 
-        // @TODO(bml) -- write bitmap about to be lost
-        // draw(bitmaps[0]);
+#if defined(SAVE_BITMAPS)
+        internal_draw(bitmaps[0]);
+#endif
 
         bitmaps.pop_front();
     }
 }
 
-void draw(const Bitmap& bmp)
+void draw(Bitmap const& bmp)
 {
-#if 0
-	static size_t counter = 0;
-	std::stringstream ss;
-	ss << "endo-" << std::setw(10) << std::setfill('0') << counter++ << ".png";
+#if defined(TRACE)
+	std::cout << "draw()\n";
+#endif
+	internal_draw(bmp);
+}
+
+void internal_draw(Bitmap const& bmp)
+{
+#if defined(SAVE_BITMAPS)
+        static size_t counter = 0;
+        std::stringstream ss;
+        ss << "endo-" << std::setw(10) << std::setfill('0') << counter++ << ".png";
 #else
     std::stringstream ss;
     ss << "endo.png";
 #endif
 
-    auto fp = std::fopen(ss.str().c_str(), "wb");
-    if (fp == nullptr) {
-        throw std::runtime_error(std::strerror(errno));
-    }
-
-    auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-    if (png_ptr == nullptr) {
-        throw std::runtime_error("could not allocate PNG write struct");
-    }
-
-    auto info_ptr = png_create_info_struct(png_ptr);
-    if (info_ptr == nullptr) {
-        throw std::runtime_error("could not allocate PNG info struct");
-    }
-
-    if (setjmp(png_jmpbuf(png_ptr))) { /* NOLINT */
-        throw std::runtime_error("error during PNG creation");
-    }
-
-    png_init_io(png_ptr, fp);
-
-    png_set_IHDR(png_ptr, info_ptr, bmp.cols(), bmp.rows(), 8, PNG_COLOR_TYPE_RGB,
-        PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-    png_write_info(png_ptr, info_ptr);
-
-    auto png_row = new png_byte[3 * bmp.cols()];
-
-    for (size_t row = 0; row < bmp.rows(); ++row) {
-        png_bytep png;
-        size_t col;
-        for (col = 0, png = png_row; col < bmp.cols(); ++col, png += 3) {
-            auto pixel = bmp.at(row, col);
-            Component r, g, b;
-            std::tie(r, g, b) = pixel.first;
-            png[0] = static_cast<png_byte>(r);
-            png[1] = static_cast<png_byte>(g);
-            png[2] = static_cast<png_byte>(b);
-        }
-
-        png_write_row(png_ptr, png_row);
-    }
-
-    png_write_end(png_ptr, nullptr);
-
-    std::fclose(fp);
-    png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
-    png_destroy_write_struct(&png_ptr, nullptr);
-    delete[] png_row;
+    bmp.write(ss.str());
 }

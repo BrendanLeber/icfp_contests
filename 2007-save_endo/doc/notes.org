@@ -1,0 +1,81 @@
+* Notes
+
+** Tasks [0/4]
+
+*** TODO program to calculate risk of a prefix.
+
+    Each prefix can be assigned a risk.  The risk is a natural number,
+    and the lower the risk, the more chances of survival Endo has.  The
+    risk is defined to be:
+
+    risk = 10 * number of incorrect pixels + length of the prefix
+
+    Here, the number of incorrect pixels is the number of positions
+    where the RGB value of the picture printed in line 206 does not
+    exactly match the RGB values of the provided target picture.  Note
+    again that the transparency values of bitmaps [ 0 ] at the time of
+    the draw command are set to 255, and that ( 0, 0 ) is the
+    upper-left and ( 599, 599 ) is the lower-right corner.  The length
+    of the prefix is the number of bases that constitute the prefix.
+
+    `risk <prefix> <source.png> <target.png>`
+    incorrect pixels x
+    length of prefix y
+    risk 10x + y
+
+*** TODO add cost accounting to execute.
+
+    In addition to the risk value, we are subject to certain resource limitations. Arrow must
+    perform the final process, and Arrow has very little energy left, so we must make sure that
+    the submitted prefix does not cause Arrow to run out of energy before it can save Endo!
+    There are two limitations:
+
+    * The length of the DNA string (~len(dna)~) must not exceed 25
+      million bases at any point of the execution process.
+    * Inspecting and quoting DNA costs energy; during the execution
+      process, we therefore maintain a cost counter that must not
+      exceed 3 billion (3x10^9):
+      + in ~pattern~ or ~template~, each base consumed has a cost of 1;
+      + during ~matchreplace~,
+       	+ a comparison of the current base with a constant base pattern
+          has a cost of 1;
+       	+ a successful search has a cost of ~n − i~, evaluated after line
+          109;
+       	+ a failed search has a cost of ~len(dna) − i~, evaluated
+          after line 109;
+       	+ however, *skips are cost-free*;
+      + for a call to ~protect~ with a level of at least 1, the cost is
+       	equal to the length of the returned DNA string -– however, a
+       	call to protect with level 0 is cost-free.
+
+*** TODO combine dna.{hpp, cpp} into execute.cpp.
+
+*** TODO combine rna.{hpp, cpp} into build.cpp.
+
+** execute
+
+#+BEGIN_EXAMPLE
+IIPIFFCPICICIICPIICIPPPICIIC
+#+END_EXAMPLE
+
+*** profile
+
+#+BEGIN_SRC sh
+./execute ../endo.dna
+mv gmon.out execute.gmon
+gprof execute execute.gmon >execute.gprof
+gprof2dot -so execute.dot execute.gprof
+xdot execute.dot &
+#+END_SRC
+
+** build
+
+*** profile
+
+#+BEGIN_SRC sh
+./build ../endo.rna
+mv gmon.out build.gmon
+gprof build build.gmon >build.gprof
+gprof2dot -so build.dot build.gprof
+xdot build.dot &
+#+END_SRC

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "rna.hpp"
+#include "build.hpp"
 
 inline bool eq(const Pos& left, const Pos& right)
 {

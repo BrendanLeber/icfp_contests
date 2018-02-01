@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 
 project(save-endo)
 
@@ -18,6 +18,31 @@ if(DO_TRACE)
   add_definitions(-DTRACE)
 endif()
 
+set(DO_SAVE_BITMAPS CACHE BOOL "Save bitmaps that might be lost by build.")
+if(DO_SAVE_BITMAPS)
+  add_definitions(-DSAVE_BITMAPS)
+endif()
+
+set(DO_COUNT_UNHANDLED_RNA CACHE BOOL "Count the number of unhandle RNA sequences.")
+if (DO_COUNT_UNHANDLED_RNA)
+  add_definitions(-DCOUNT_UNHANDLED_RNA)
+endif()
+
+set(DO_POOR_PROFILE OFF CACHE BOOL "Enable poor man's profiling during execution.")
+if(DO_POOR_PROFILE)
+  add_definitions(-DPOOR_PROFILE)
+endif()
+
+set(DO_POOR_COUNTER OFF CACHE BOOL "Enable poor man's function counter during execution.")
+if (DO_POOR_COUNTER)
+  add_definitions(-DPOOR_FUNC_COUNTER)
+endif()
+
+set(DO_GPROF OFF CACHE BOOL "Enable gprof.")
+if (DO_GPROF)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+endif()
 
 include_directories(include)
 
@@ -31,14 +56,16 @@ add_executable(execute src/execute.cpp $<TARGET_OBJECTS:dna>)
 add_executable(build src/build.cpp $<TARGET_OBJECTS:rna>)
 target_link_libraries(build z png)
 
+set(DO_UNIT_TESTING OFF CACHE BOOL "Enable compiling unit tests.")
+if (DO_UNIT_TESTING)
+  enable_testing()
 
-enable_testing()
-
-file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/t*-*.cpp)
-foreach(test_src ${TEST_SRCS})
-  get_filename_component(test_name ${test_src} NAME_WE)
-  add_executable(${test_name} ${test_src} $<TARGET_OBJECTS:dna> $<TARGET_OBJECTS:rna>)
-  target_link_libraries(${test_name} z png)
-  target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-  add_test(NAME ${test_name} COMMAND ${test_name})
-endforeach()
+  file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test/t*-*.cpp)
+  foreach(test_src ${TEST_SRCS})
+    get_filename_component(test_name ${test_src} NAME_WE)
+    add_executable(${test_name} ${test_src} $<TARGET_OBJECTS:dna> $<TARGET_OBJECTS:rna>)
+    target_link_libraries(${test_name} z png)
+    target_include_directories(${test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    add_test(NAME ${test_name} COMMAND ${test_name})
+  endforeach()
+endif()

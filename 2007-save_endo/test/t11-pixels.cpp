@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "rna.hpp"
+#include "build.hpp"
 
 inline bool pixel_eq(const Pixel& left, const Pixel& right)
 {

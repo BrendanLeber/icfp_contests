@@ -4,6 +4,26 @@
 #include <iterator>
 #include <sstream>
 
+#if defined(POOR_PROFILE)
+#include <chrono>
+#endif
+
+#if defined(POOR_FUNC_COUNTER)
+struct Prof_Function_Counters {
+    unsigned asnat{ 0 };
+    unsigned consts{ 0 };
+    unsigned nat{ 0 };
+    unsigned matchreplace{ 0 };
+    unsigned pattern{ 0 };
+    unsigned protect{ 0 };
+    unsigned quote{ 0 };
+    unsigned replace{ 0 };
+    unsigned templates{ 0 };
+};
+
+static Prof_Function_Counters pfc;
+#endif
+
 #include "dna.hpp"
 
 DNA dna; /* NOLINT */ // @TODO(bml) - remove warning via refactor
@@ -136,6 +156,10 @@ dna_starts_with(const std::string& value)
 
 DNA asnat(Number n)
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.asnat++;
+#endif
+
     DNA result;
 
     while (n > 0) {
@@ -156,6 +180,10 @@ DNA asnat(Number n)
 
 DNA consts()
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.consts++;
+#endif
+
     DNA s;
 
     if (dna_starts_with("C")) {
@@ -189,6 +217,10 @@ void execute()
         iteration = -1;
         n_rna = 0;
 
+#if defined(POOR_PROFILE)
+        auto prof_start = std::chrono::high_resolution_clock::now();
+#endif
+
         while (true) {
             ++iteration;
 
@@ -197,15 +229,44 @@ void execute()
             std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
 #else
             if ((iteration % 1024u) == 0) {
+#if defined(POOR_PROFILE)
+                auto prof_end = std::chrono::high_resolution_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(prof_end - prof_start).count();
+#endif
+
                 // std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << rna.size() << '\n';
-                std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << n_rna << '\n';
+                std::cerr
+                    << "iteration " << iteration
+                    << "  dna " << dna.size()
+                    << "  rna " << n_rna
+#if defined(POOR_PROFILE)
+                    << "  elapsed " << elapsed << "s"
+                    << "  iter/sec " << (static_cast<double>(iteration) / static_cast<double>(elapsed))
+                    << "  sec/iter " << (static_cast<double>(elapsed) / static_cast<double>(iteration))
+#endif
+                    << '\n';
+
+#if defined(POOR_FUNC_COUNTER)
+                std::cerr
+                    << "counts"
+                    << " asnat " << pfc.asnat
+                    << " consts " << pfc.consts
+                    << " nat " << pfc.nat
+                    << " matchreplace " << pfc.matchreplace
+                    << " pattern " << pfc.pattern
+                    << " protect " << pfc.protect
+                    << " quote " << pfc.quote
+                    << " replace " << pfc.replace
+                    << " templates " << pfc.templates
+                    << '\n';
+#endif
             }
 #endif
 
             auto pat = pattern();
 
 #if defined(TRACE)
-            std::cerr << "pattern " << to_string(pat) << '\n';
+            std::cerr << "pattern  " << to_string(pat) << '\n';
 #endif
 
             auto templ = templates();
@@ -243,6 +304,10 @@ void execute()
 
 void matchreplace(const Pattern& pat, const Template& t)
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.matchreplace++;
+#endif
+
     Number i = 0;
     Environment e;
     std::deque<Number> c;
@@ -292,7 +357,7 @@ void matchreplace(const Pattern& pat, const Template& t)
     }
 
 #if defined(TRACE)
-    std::cerr << "successful match of length " << i << '\n';
+    std::cerr << "succesful match of length " << i << '\n';
 #endif
 
     dna.erase(std::begin(dna), std::begin(dna) + i);
@@ -301,6 +366,10 @@ void matchreplace(const Pattern& pat, const Template& t)
 
 Number nat()
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.nat++;
+#endif
+
     Number n = 0;
 
     if (dna.empty()) {
@@ -347,6 +416,10 @@ Number nat()
 
 Pattern pattern()
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.pattern++;
+#endif
+
     Pattern p;
     int lvl = 0;
 
@@ -409,13 +482,22 @@ Pattern pattern()
 
 DNA protect(Number l, const DNA& d)
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.protect++;
+#endif
+
     return l == 0 ? d : protect(l - 1, quote(d));
 }
 
 DNA quote(const DNA& d)
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.quote++;
+#endif
+
     DNA result;
 
+#if 0 // recursive version
     if (!d.empty()) {
         switch (d.front()) {
         case 'I':
@@ -440,12 +522,38 @@ DNA quote(const DNA& d)
             break;
         }
     }
+#else
+    for (auto base : d) {
+        switch (base) {
+        case 'I':
+            result.push_back('C');
+            break;
+
+        case 'C':
+            result.push_back('F');
+            break;
+
+        case 'F':
+            result.push_back('P');
+            break;
+
+        case 'P':
+            result.push_back('I');
+            result.push_back('C');
+            break;
+        }
+    }
+#endif
 
     return result;
 }
 
 void replace(const Template& tpl, const Environment& e)
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.replace++;
+#endif
+
     DNA p, r, n;
 
 #if defined(TRACE)
@@ -475,6 +583,10 @@ void replace(const Template& tpl, const Environment& e)
 
 Template templates()
 {
+#if defined(POOR_FUNC_COUNTER)
+    pfc.templates++;
+#endif
+
     Template t;
 
     while (true) {

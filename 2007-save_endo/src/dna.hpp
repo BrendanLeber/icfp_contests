@@ -10,8 +10,6 @@ using Number = int;
 
 using DNA = std::deque<Base>;
 
-using RNA = std::deque<DNA>;
-
 DNA asnat(Number n);
 DNA consts();
 void execute();
@@ -101,7 +99,6 @@ std::string to_string(const Template& templ);
 std::string to_string(const Environment& env);
 
 extern DNA dna;
-extern RNA rna;
 
 // inline bool dna_starts_with(const std::string& val) { return dna.find(val) == 0; }
 

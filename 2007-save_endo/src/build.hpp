@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "array.hpp"
+#include "bitmap.hpp"
 
 using Coord = int;
 using Pos = std::pair<Coord, Coord>;
@@ -16,10 +16,7 @@ using RGB = std::tuple<Component, Component, Component>;
 using Transparency = Component;
 using Pixel = std::pair<RGB, Transparency>;
 
-constexpr size_t BMP_WIDTH = 600;
-constexpr size_t BMP_HEIGHT = 600;
-
-using Bitmap = bml::Array<Pixel>;
+using Bitmap = Array<Pixel>;
 
 struct Color {
     enum class Type { Color,
@@ -60,8 +57,6 @@ extern const RGB white;
 extern const Transparency transparent;
 extern const Transparency opaque;
 
-extern Bitmap transparentBitmap;
-
 extern Bucket bucket;
 extern Pos position;
 extern Pos mark;
@@ -73,7 +68,7 @@ void rna_init();
 
 void clip();
 void compose();
-void addBitmap(Bitmap& b);
+void addBitmap(/*Bitmap& b*/);
 void fill(Pos p, Pixel initial);
 void tryfill();
 void line(Pos p0, Pos p1);
