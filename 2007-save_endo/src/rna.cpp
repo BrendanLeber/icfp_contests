@@ -314,9 +314,11 @@ void addBitmap()
     if (bitmaps.size() < 10) {
 	    bitmaps.emplace_front(Bitmap{});
     }
+#if defined(TRACE)
     else {
             std::cout << "not adding new transparent bitmap as our sequence is full.\n";
     }
+#endif
 }
 
 void compose()
@@ -326,7 +328,9 @@ void compose()
 #endif
 
 #if defined(SAVE_BITMAPS)
-	internal_draw(bitmaps[1]);
+	if (bitmaps.size() > 1) {
+		internal_draw(bitmaps[1]);
+	}
 #endif
 
     if (bitmaps.size() >= 2) {

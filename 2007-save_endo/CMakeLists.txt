@@ -28,33 +28,26 @@ if (DO_COUNT_UNHANDLED_RNA)
   add_definitions(-DCOUNT_UNHANDLED_RNA)
 endif()
 
-set(DO_POOR_PROFILE OFF CACHE BOOL "Enable poor man's profiling during execution.")
-if(DO_POOR_PROFILE)
-  add_definitions(-DPOOR_PROFILE)
-endif()
-
-set(DO_POOR_COUNTER OFF CACHE BOOL "Enable poor man's function counter during execution.")
-if (DO_POOR_COUNTER)
-  add_definitions(-DPOOR_FUNC_COUNTER)
-endif()
-
 set(DO_GPROF OFF CACHE BOOL "Enable gprof.")
 if (DO_GPROF)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 endif()
 
-include_directories(include)
-
 add_library(dna OBJECT src/dna.cpp)
 add_library(rna OBJECT src/rna.cpp)
 
 
-# DNA -> execute -> RNA -> build -> IMAGE
+# execute <dna>... -> RNA
 add_executable(execute src/execute.cpp $<TARGET_OBJECTS:dna>)
 
+# build <rna> -> endo.png
 add_executable(build src/build.cpp $<TARGET_OBJECTS:rna>)
 target_link_libraries(build z png)
+
+# risk <prefix-dna> <source.png> <target.png>
+add_executable(risk src/risk.cpp)
+target_link_libraries(risk z png)
 
 set(DO_UNIT_TESTING OFF CACHE BOOL "Enable compiling unit tests.")
 if (DO_UNIT_TESTING)

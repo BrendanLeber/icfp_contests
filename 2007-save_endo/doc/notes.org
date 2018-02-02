@@ -54,8 +54,23 @@
 
 ** execute
 
+*** prefix dna found
+
+**** From Endo.pdf
+
+     This prefix causes the self-check image to be generated.
+
 #+BEGIN_EXAMPLE
 IIPIFFCPICICIICPIICIPPPICIIC
+#+END_EXAMPLE
+
+**** From self-check.
+
+     If the intermediate output images are saved when running the
+     self-check the following prefix is displayed in an image.
+
+#+BEGIN_EXAMPLE
+IIPIFFCPICFPPICIICCIICIPPPFIIC
 #+END_EXAMPLE
 
 *** profile
