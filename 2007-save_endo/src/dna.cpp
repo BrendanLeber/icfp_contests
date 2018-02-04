@@ -450,8 +450,10 @@ void replace(const Template& tpl, const Environment& e)
             break;
 
         case TItem::Type::Protection:
-            p = protect(t.prot.first, e[t.prot.second]); /* NOLINT */
-            r.insert(std::end(r), std::begin(p), std::end(p));
+	    if (t.prot.first != 0 || t.prot.second < e.size()) {
+		p = protect(t.prot.first, e[t.prot.second]); /* NOLINT */
+		r.insert(std::end(r), std::begin(p), std::end(p));
+	    }
             break;
 
         case TItem::Type::Reference:

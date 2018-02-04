@@ -18,12 +18,12 @@ if(DO_TRACE)
   add_definitions(-DTRACE)
 endif()
 
-set(DO_SAVE_BITMAPS CACHE BOOL "Save bitmaps that might be lost by build.")
+set(DO_SAVE_BITMAPS ON CACHE BOOL "Save bitmaps that might be lost by build.")
 if(DO_SAVE_BITMAPS)
   add_definitions(-DSAVE_BITMAPS)
 endif()
 
-set(DO_COUNT_UNHANDLED_RNA CACHE BOOL "Count the number of unhandle RNA sequences.")
+set(DO_COUNT_UNHANDLED_RNA ON CACHE BOOL "Count the number of unhandle RNA sequences.")
 if (DO_COUNT_UNHANDLED_RNA)
   add_definitions(-DCOUNT_UNHANDLED_RNA)
 endif()
@@ -35,14 +35,13 @@ if (DO_GPROF)
 endif()
 
 add_library(dna OBJECT src/dna.cpp)
-add_library(rna OBJECT src/rna.cpp)
 
 
 # execute <dna>... -> RNA
 add_executable(execute src/execute.cpp $<TARGET_OBJECTS:dna>)
 
 # build <rna> -> endo.png
-add_executable(build src/build.cpp $<TARGET_OBJECTS:rna>)
+add_executable(build src/build.cpp) ### $<TARGET_OBJECTS:rna>)
 target_link_libraries(build z png)
 
 # risk <prefix-dna> <source.png> <target.png>
