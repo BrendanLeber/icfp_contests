@@ -1,20 +1,19 @@
 #pragma once
 
-#include <string>
 #include <png++/png.hpp>
+#include <string>
 #include <zlib.h>
 
 template <typename T>
-struct Array
-{
+struct Array {
 private:
     size_t rows_;
     size_t cols_;
     T* internal_array;
 
 public:
-    constexpr static size_t BMP_WIDTH { 600 };
-    constexpr static size_t BMP_HEIGHT { 600 };
+    constexpr static size_t BMP_WIDTH{ 600 };
+    constexpr static size_t BMP_HEIGHT{ 600 };
 
     Array()
         : rows_(BMP_HEIGHT), cols_(BMP_WIDTH), internal_array(new T[rows_ * cols_]())

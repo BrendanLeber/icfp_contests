@@ -390,10 +390,10 @@ Pattern pattern()
             p.emplace_back(PItem(false)); // close group
         }
         else if (dna_starts_with("III")) {
-		std::string out(std::begin(dna) + 3, std::begin(dna) + 10);
-		dna.erase(std::begin(dna), std::begin(dna) + 10);
-		std::cout << out << '\n';
-		++n_rna;
+            std::string out(std::begin(dna) + 3, std::begin(dna) + 10);
+            dna.erase(std::begin(dna), std::begin(dna) + 10);
+            std::cout << out << '\n';
+            ++n_rna;
         }
         else {
             // std::cerr << "# !!! pattern() Unrecognized DNA sequence!\nBail out!\n";
@@ -450,10 +450,10 @@ void replace(const Template& tpl, const Environment& e)
             break;
 
         case TItem::Type::Protection:
-	    if (t.prot.first != 0 || t.prot.second < e.size()) {
-		p = protect(t.prot.first, e[t.prot.second]); /* NOLINT */
-		r.insert(std::end(r), std::begin(p), std::end(p));
-	    }
+            if (t.prot.first != 0 || t.prot.second < e.size()) {
+                p = protect(t.prot.first, e[t.prot.second]); /* NOLINT */
+                r.insert(std::end(r), std::begin(p), std::end(p));
+            }
             break;
 
         case TItem::Type::Reference:

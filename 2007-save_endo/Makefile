@@ -1,7 +1,4 @@
-SRCDIR := src
-SRCEXT := cpp
-
-format: $(SRCDIR)/*.$(SRCEXT) $(SRCDIR)/*.hpp include/*.hpp
+format: src/*.cpp src/*.hpp
 	clang-format -i -style=file $^
 
 help:

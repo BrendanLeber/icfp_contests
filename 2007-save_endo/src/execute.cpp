@@ -19,7 +19,9 @@ void read(std::string const& dna_file)
         exit(EXIT_FAILURE);
     }
 
-    struct stat sb { 0 };
+    struct stat sb {
+        0
+    };
     if (fstat(fd, &sb) == -1) {
         perror("fstat");
         exit(EXIT_FAILURE);

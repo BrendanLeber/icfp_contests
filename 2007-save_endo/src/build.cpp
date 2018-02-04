@@ -31,7 +31,8 @@ using Pixel = std::pair<RGB, Transparency>;
 using Bitmap = Array<Pixel>;
 
 struct Color {
-    enum class Type { Color, Transparency };
+    enum class Type { Color,
+        Transparency };
     Type type;
     RGB color;
     Transparency alpha;
@@ -49,13 +50,16 @@ struct Color {
 
 using Bucket = std::vector<Color>;
 
-enum class Direction { N, E, S, W };
+enum class Direction { N,
+    E,
+    S,
+    W };
 
 static Bucket bucket;
-static Pos position{ 0, 0 };  /* NOLINT */
-static Pos mark { 0, 0 };  /* NOLINT */
-static Direction dir { Direction::E };
-static std::deque<Bitmap> bitmaps;  /* NOLINT */
+static Pos position{ 0, 0 }; /* NOLINT */
+static Pos mark{ 0, 0 }; /* NOLINT */
+static Direction dir{ Direction::E };
+static std::deque<Bitmap> bitmaps; /* NOLINT */
 
 Component average(std::vector<Component> const& values, Component def);
 
@@ -298,7 +302,7 @@ void line(Pos p0, Pos p1, Pixel pixel)
     for (Coord t = 0; t < static_cast<Coord>(d); ++t) {
         set_pixel(
             std::make_pair(static_cast<Coord>(std::floor(x / d)),
-              static_cast<Coord>(std::floor(y / d))),
+                static_cast<Coord>(std::floor(y / d))),
             pixel);
         x += deltax;
         y += deltay;
@@ -371,7 +375,7 @@ void tryfill()
     auto o = get_pixel(position);
     if (n != o) {
 #if defined(SAVE_BITMAPS)
-        save_bitmaps(bitmaps[0]);  // save what might be overwritten
+        save_bitmaps(bitmaps[0]); // save what might be overwritten
 #endif
         fill(position, o);
     }
@@ -392,12 +396,12 @@ int main(int argc, char** argv)
 
     try {
         // @TODO(BML) - Read from stdin if argv[1] == "-"
-        std::ifstream in(argv[1]);  /* NOLINT */
+        std::ifstream in(argv[1]); /* NOLINT */
 
         static size_t counter = 0;
-	std::cout << "rna " << counter << '\n';
+        std::cout << "rna " << counter << '\n';
 
-	std::string rna;
+        std::string rna;
         while (std::getline(in, rna)) {
             ++counter;
             if ((counter % 1024) == 0) {
@@ -405,44 +409,44 @@ int main(int argc, char** argv)
             }
 
             if (rna == "PIPIIIC") {
-		// black
-                bucket.emplace_back(Color{RGB{ 0, 0, 0 }});
+                // black
+                bucket.emplace_back(Color{ RGB{ 0, 0, 0 } });
             }
             else if (rna == "PIPIIIP") {
-		// red
-                bucket.emplace_back(Color{RGB{ 255, 0, 0 }});
+                // red
+                bucket.emplace_back(Color{ RGB{ 255, 0, 0 } });
             }
             else if (rna == "PIPIICC") {
-		// green
-                bucket.emplace_back(Color{RGB{ 0, 255, 0 }});
+                // green
+                bucket.emplace_back(Color{ RGB{ 0, 255, 0 } });
             }
             else if (rna == "PIPIICF") {
-		// yellow
-                bucket.emplace_back(Color{RGB{ 255, 255, 0 }});
+                // yellow
+                bucket.emplace_back(Color{ RGB{ 255, 255, 0 } });
             }
             else if (rna == "PIPIICP") {
-		// blue
-                bucket.emplace_back(Color{RGB{ 0, 0, 255 }});
+                // blue
+                bucket.emplace_back(Color{ RGB{ 0, 0, 255 } });
             }
             else if (rna == "PIPIIFC") {
-		// magenta
-                bucket.emplace_back(Color{RGB{ 255, 0, 255 }});
+                // magenta
+                bucket.emplace_back(Color{ RGB{ 255, 0, 255 } });
             }
             else if (rna == "PIPIIFF") {
-		// cyan
-                bucket.emplace_back(Color{RGB{ 0, 255, 255 }});
+                // cyan
+                bucket.emplace_back(Color{ RGB{ 0, 255, 255 } });
             }
             else if (rna == "PIPIIPC") {
-		// white
-                bucket.emplace_back(Color{RGB{ 255, 255, 255 }});
+                // white
+                bucket.emplace_back(Color{ RGB{ 255, 255, 255 } });
             }
             else if (rna == "PIPIIPF") {
-		// transparent
-                bucket.emplace_back(Color{Transparency{ 0 }});
+                // transparent
+                bucket.emplace_back(Color{ Transparency{ 0 } });
             }
             else if (rna == "PIPIIPP") {
-		// opaque
-                bucket.emplace_back(Color{Transparency{ 255 }});
+                // opaque
+                bucket.emplace_back(Color{ Transparency{ 255 } });
             }
             else if (rna == "PIIPICP") {
                 bucket.clear();
@@ -527,8 +531,8 @@ int main(int argc, char** argv)
         // <- transparentBitmap <| empty
         bitmaps[0].write("endo.png");
 
-	// how many RNA sequences did we process?
-	std::cout << "rna " << counter << '\n';
+        // how many RNA sequences did we process?
+        std::cout << "rna " << counter << '\n';
     }
     catch (std::exception const& ex) {
         std::cerr << "exception!!! " << ex.what() << '\n';
