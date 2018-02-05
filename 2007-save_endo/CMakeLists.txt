@@ -34,14 +34,12 @@ if (DO_GPROF)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 endif()
 
-add_library(dna OBJECT src/dna.cpp)
-
 
 # execute <dna>... -> RNA
-add_executable(execute src/execute.cpp $<TARGET_OBJECTS:dna>)
+add_executable(execute src/execute.cpp)
 
 # build <rna> -> endo.png
-add_executable(build src/build.cpp) ### $<TARGET_OBJECTS:rna>)
+add_executable(build src/build.cpp)
 target_link_libraries(build z png)
 
 # risk <prefix-dna> <source.png> <target.png>

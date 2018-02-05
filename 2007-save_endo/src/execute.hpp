@@ -10,12 +10,6 @@ using Number = int;
 
 using DNA = std::deque<Base>;
 
-DNA asnat(Number n);
-DNA consts();
-void execute();
-[[noreturn]] void finish();
-Number nat();
-
 struct TItem {
     enum class Type { Base,
         Protection,
@@ -98,11 +92,12 @@ std::string to_string(const Pattern& pat);
 std::string to_string(const Template& templ);
 std::string to_string(const Environment& env);
 
-extern DNA dna;
-
-// inline bool dna_starts_with(const std::string& val) { return dna.find(val) == 0; }
-
+DNA asnat(Number n);
+DNA consts();
+void execute();
+[[noreturn]] void finish();
 void matchreplace(const Pattern& pat, const Template& t);
+Number nat();
 Pattern pattern();
 DNA protect(Number l, const DNA& d);
 DNA quote(const DNA& d);
