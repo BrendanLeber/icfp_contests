@@ -1,48 +1,26 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
-
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "dna.hpp"
 
 void read(std::string const& dna_file)
 {
-    auto fd = open(dna_file.c_str(), O_RDONLY); /* NOLINT */
-    if (fd == -1) {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
+    std::string data;
+    std::ifstream inf;
+    inf.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    inf.open(dna_file);
+    inf >> data;
+    inf.close();
 
-    struct stat sb {
-        0
-    };
-    if (fstat(fd, &sb) == -1) {
-        perror("fstat");
-        exit(EXIT_FAILURE);
-    }
+    // remove any whitespace that might be in the input file
+    data.erase(std::remove_if(std::begin(data), std::end(data),
+                   [](char base) { return std::isspace(base); }),
+        std::end(data));
 
-    auto pmap = static_cast<Base*>(mmap(nullptr, sb.st_size, PROT_READ, MAP_SHARED, fd, 0));
-    if (pmap == MAP_FAILED) { /* NOLINT */
-        perror("mmap");
-        exit(EXIT_FAILURE);
-    }
-
-    dna.insert(std::end(dna), pmap, pmap + sb.st_size);
-
-    munmap(pmap, sb.st_size);
-    close(fd);
-
-    // remove any whitespace that might be in the input file that was
-    // added to our DNA sequence
-    dna.erase(std::remove_if(std::begin(dna), std::end(dna),
-                  [](DNA::value_type base) { return std::isspace(base); }),
-        std::end(dna));
+    dna.insert(std::end(dna), std::begin(data), std::end(data));
 }
 
 int main(int argc, char** argv)
