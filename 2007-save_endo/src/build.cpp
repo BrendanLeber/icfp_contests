@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <locale>
 #include <numeric>
 #include <sstream>
 #include <stack>
@@ -394,18 +395,20 @@ int main(int argc, char** argv)
     std::map<std::string, unsigned> unhandled_rna;
 #endif
 
+    std::cout.imbue(std::locale(""));
+
     try {
         // @TODO(BML) - Read from stdin if argv[1] == "-"
         std::ifstream in(argv[1]); /* NOLINT */
 
         static size_t counter = 0;
-        std::cout << "rna " << counter << '\n';
+        std::cout << "rna " << std::fixed << counter << '\n';
 
         std::string rna;
         while (std::getline(in, rna)) {
             ++counter;
             if ((counter % 1024) == 0) {
-                std::cout << "rna " << counter << '\n';
+                std::cout << "rna " << std::fixed << counter << '\n';
             }
 
             if (rna == "PIPIIIC") {
@@ -532,7 +535,7 @@ int main(int argc, char** argv)
         bitmaps[0].write("endo.png");
 
         // how many RNA sequences did we process?
-        std::cout << "rna " << counter << '\n';
+        std::cout << "rna " << std::fixed << counter << '\n';
     }
     catch (std::exception const& ex) {
         std::cerr << "exception!!! " << ex.what() << '\n';
@@ -543,7 +546,7 @@ int main(int argc, char** argv)
     std::cout << "Unhandled RNA Counts:\n";
     for (auto const& kv : unhandled_rna) {
         total_unused += kv.second;
-        std::cout << "  " << kv.first << ' ' << kv.second << '\n';
+        std::cout << "  " << kv.first << ' ' << std::fixed << kv.second << '\n';
     }
     std::cout << " total " << total_unused << '\n';
 #endif

@@ -1,6 +1,6 @@
 * Notes
 
-** Tasks [2/4]
+** Tasks [3/4]
 
 *** DONE program to calculate risk of a prefix.
 
@@ -48,7 +48,7 @@
        	equal to the length of the returned DNA string -– however, a
        	call to protect with level 0 is cost-free.
 
-*** TODO combine dna.{hpp, cpp} into execute.cpp.
+*** DONE combine dna.{hpp, cpp} into execute.cpp.
 
 *** DONE combine rna.{hpp, cpp} into build.cpp.
 

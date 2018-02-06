@@ -2,7 +2,9 @@
 #include <cctype>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <locale>
 #include <sstream>
 #include <string>
 
@@ -187,48 +189,36 @@ DNA consts()
 
 void execute()
 {
-    try {
-        iteration = -1;
-        n_rna = 0;
-
-        while (true) {
-            ++iteration;
+    while (true) {
+        ++iteration;
 
 #if defined(TRACE)
-            std::cerr << "iteration " << iteration << '\n';
-            std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
+        std::cerr << "iteration " << iteration << '\n';
+        std::cerr << "dna = " << to_string(dna) << " (" << dna.size() << " bases)\n";
 #else
-            if ((iteration % 1024u) == 0) {
-                std::cerr << "iteration " << iteration << "  dna " << dna.size() << "  rna " << n_rna << '\n';
-            }
-#endif
-
-            auto pat = pattern();
-
-#if defined(TRACE)
-            std::cerr << "pattern  " << to_string(pat) << '\n';
-#endif
-
-            auto templ = templates();
-
-#if defined(TRACE)
-            std::cerr << "template " << to_string(templ) << '\n';
-#endif
-
-            matchreplace(pat, templ);
-
-#if defined(TRACE)
-            // std::cerr << "len(rna) = " << rna.size() << "\n\n";
-            std::cerr << "len(rna) = " << n_rna << "\n\n";
-#endif
+        if ((iteration % 1024u) == 0) {
+            std::cerr << "iteration " << std::fixed << iteration << "  dna " << std::fixed << dna.size() << "  rna " << std::fixed << n_rna << "  cost " << std::fixed << cost << '\n';
         }
-    }
-    catch (const std::exception& ex) {
-        std::cerr
-            << "exception " << ex.what()
-            << "\niterations " << iteration
-            << "\ndna = " << to_string(dna) << " (" << dna.size() << " bases)"
-            << "\nlen(rna) = " << n_rna << "\n\n";
+#endif
+
+        auto pat = pattern();
+
+#if defined(TRACE)
+        std::cerr << "pattern  " << to_string(pat) << '\n';
+#endif
+
+        auto templ = templates();
+
+#if defined(TRACE)
+        std::cerr << "template " << to_string(templ) << '\n';
+#endif
+
+        matchreplace(pat, templ);
+
+#if defined(TRACE)
+        // std::cerr << "len(rna) = " << rna.size() << "\n\n";
+        std::cerr << "rna " << std::fixed << n_rna << "  cost " << std::fixed << cost << '\n';
+#endif
     }
 }
 
@@ -236,8 +226,9 @@ void execute()
 {
     std::cerr
         << "iterations " << iteration
-        << "\ndna = " << to_string(dna) << " (" << dna.size() << " bases)"
-        << "\nlen(rna) = " << n_rna << "\n\n";
+        << "  dna " << dna.size()
+        << "  rna " << n_rna
+        << "  cost " << cost << '\n';
 
     exit(EXIT_SUCCESS);
 }
@@ -252,6 +243,7 @@ void matchreplace(const Pattern& pat, const Template& t)
         switch (p.type) {
         case PItem::Type::Base:
             if (dna[i] == p.base) {
+                cost += 1;
                 i += 1;
             }
             else {
@@ -276,7 +268,13 @@ void matchreplace(const Pattern& pat, const Template& t)
             auto start = std::begin(dna) + i;
             auto it = std::search(start, std::end(dna), std::begin(p.search), std::end(p.search));
             if (it != std::end(dna)) {
-                i += std::distance(start, it) + p.search.size();
+                auto n = std::distance(start, it) + p.search.size();
+                cost += n - i;
+                i += n;
+            }
+            else {
+                // failed match
+                cost += dna.size() - i;
             }
             break;
         }
@@ -354,37 +352,45 @@ Pattern pattern()
     while (true) {
         if (dna_starts_with("C")) {
             dna.pop_front();
+            cost += 1;
             p.emplace_back(PItem('I'));
         }
         else if (dna_starts_with("F")) {
             dna.pop_front();
+            cost += 1;
             p.emplace_back(PItem('C'));
         }
         else if (dna_starts_with("P")) {
             dna.pop_front();
+            cost += 1;
             p.emplace_back(PItem('F'));
         }
         else if (dna_starts_with("IC")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
+            cost += 2;
             p.emplace_back(PItem('P'));
         }
         else if (dna_starts_with("IP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
+            cost += 2;
             auto n = nat();
             p.emplace_back(PItem(n));
         }
         else if (dna_starts_with("IF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3); // three bases consumed!
+            cost += 3;
             auto s = consts();
             p.emplace_back(PItem(s));
         }
         else if (dna_starts_with("IIP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
+            cost += 3;
             lvl += 1;
             p.emplace_back(PItem(true)); // open group
         }
         else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
+            cost += 3;
             if (lvl == 0) {
                 return p;
             }
@@ -394,8 +400,9 @@ Pattern pattern()
         else if (dna_starts_with("III")) {
             std::string out(std::begin(dna) + 3, std::begin(dna) + 10);
             dna.erase(std::begin(dna), std::begin(dna) + 10);
-            std::cout << out << '\n';
+            cost += 10;
             ++n_rna;
+            std::cout << out << '\n';
         }
         else {
             // std::cerr << "# !!! pattern() Unrecognized DNA sequence!\nBail out!\n";
@@ -404,9 +411,19 @@ Pattern pattern()
     }
 }
 
-DNA protect(Number l, const DNA& d)
+DNA protect(Number l, DNA const& d)
 {
-    return l == 0 ? d : protect(l - 1, quote(d));
+    if (l < 1) {
+        return d;
+    }
+
+    DNA ret{ protect(l - 1, quote(d)) };
+
+    if (l == 1) {
+        cost += ret.size();
+    }
+
+    return ret;
 }
 
 DNA quote(const DNA& d)
@@ -475,38 +492,46 @@ Template templates()
     while (true) {
         if (dna_starts_with("C")) {
             dna.pop_front();
+            cost += 1;
             t.emplace_back(TItem('I'));
         }
         else if (dna_starts_with("F")) {
             dna.pop_front();
+            cost += 1;
             t.emplace_back(TItem('C'));
         }
         else if (dna_starts_with("P")) {
             dna.pop_front();
+            cost += 1;
             t.emplace_back(TItem('F'));
         }
         else if (dna_starts_with("IC")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
+            cost += 2;
             t.emplace_back(TItem('P'));
         }
         else if (dna_starts_with("IF") || dna_starts_with("IP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 2);
+            cost += 2;
             auto l = nat();
             auto n = nat();
             t.emplace_back(TItem(l, n));
         }
         else if (dna_starts_with("IIC") || dna_starts_with("IIF")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
+            cost += 3;
             return t;
         }
         else if (dna_starts_with("IIP")) {
             dna.erase(std::begin(dna), std::begin(dna) + 3);
+            cost += 3;
             auto n = nat();
             t.emplace_back(n);
         }
         else if (dna_starts_with("III")) {
             DNA slice(std::begin(dna) + 3, std::begin(dna) + 11);
             dna.erase(std::begin(dna), std::begin(dna) + 11);
+            cost += 11;
             for (auto b : slice) {
                 std::cout << b;
             }
@@ -534,6 +559,10 @@ void read(std::string const& dna_file)
                    [](char base) { return std::isspace(base); }),
         std::end(data));
 
+#if defined(TRACE)
+    std::cerr << "file " << dna_file << "  length " << data.size() << '\n';
+#endif
+
     dna.insert(std::end(dna), std::begin(data), std::end(data));
 }
 
@@ -544,11 +573,32 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-    for (int arg = 1; arg < argc; ++arg) {
-        read(argv[arg]); /* NOLINT */
-    }
+    std::cerr.imbue(std::locale(""));
+    std::cout.imbue(std::locale(""));
 
-    execute();
+    try {
+        for (int arg = 1; arg < argc; ++arg) {
+            read(argv[arg]); /* NOLINT */
+        }
+
+        iteration = 0;
+        n_rna = 0;
+        cost = 0;
+
+        std::cerr << "iteration " << std::fixed << iteration << "  dna " << std::fixed << dna.size() << "  rna " << std::fixed << n_rna << "  cost " << std::fixed << cost << '\n';
+        execute();
+    }
+    catch (std::ios_base::failure const& ex) {
+        std::cerr << "exception " << ex.what() << " code " << ex.code() << '\n';
+    }
+    catch (std::exception const& ex) {
+        std::cerr
+            << "exception " << ex.what()
+            << "\niterations " << iteration
+            << "\ndna = " << to_string(dna) << " (" << std::fixed << dna.size() << " bases)"
+            << "\ncost = " << std::fixed << cost
+            << "\nlen(rna) = " << std::fixed << n_rna << "\n\n";
+    }
 
     // we exit when matchreplace() calls finish().
     // getting here is an error
