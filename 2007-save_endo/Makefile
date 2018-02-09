@@ -1,4 +1,4 @@
-format: src/*.cpp src/*.hpp
+format: src/*.cpp src/*.hpp test/test-*.cpp
 	clang-format -i -style=file $^
 
 help:

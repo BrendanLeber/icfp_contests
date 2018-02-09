@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "dna.hpp"
+#include "execute.hpp"
 
 int main()
 {
@@ -24,28 +24,23 @@ int main()
 
     std::cout << "1.." << tests.size() << '\n';
 
-    DNA input, output;
-    std::string actual;
+    Arrow arrow;
+    size_t test = 0;
 
-    for (size_t t = 0; t < tests.size(); ++t) {
-        auto tval = tests[t];
-        input.clear();
-        input.insert(std::end(input), std::begin(std::get<1>(tval)), std::end(std::get<1>(tval)));
+    for (auto& tval : tests) {
+        test++;
 
-        output = protect(std::get<0>(tval), input);
-
-        actual.clear();
-        actual.insert(std::end(actual), std::begin(output), std::end(output));
+        arrow.dna = std::get<1>(tval);
+        auto output = arrow.protect(std::get<0>(tval), arrow.dna);
+        auto actual = output.to_string();
 
         if (std::get<2>(tval) != actual) {
             retval = EXIT_FAILURE;
         }
 
-        std::cout
-            << (std::get<2>(tval) != actual ? "not " : "") << "ok " << t + 1
-            << " - protect(" << std::get<0>(tval) << ", '" << std::get<1>(tval) << "')"
-            << " -> " << actual
-            << " [ " << std::get<2>(tval) << " ]\n";
+        std::cout << (std::get<2>(tval) != actual ? "not " : "") << "ok " << test
+                  << " - protect(" << std::get<0>(tval) << ", '" << std::get<1>(tval) << "')"
+                  << " expected " << std::get<2>(tval) << " actual " << actual << '\n';
     }
 
     return retval;

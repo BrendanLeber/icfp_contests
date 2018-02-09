@@ -5,11 +5,13 @@
 #include <utility>
 #include <vector>
 
-#include "dna.hpp"
+#include "execute.hpp"
 
 int main()
 {
     int retval = EXIT_SUCCESS;
+
+    Arrow arrow;
 
     std::vector<std::pair<std::string, std::string>> tests;
     tests.emplace_back(std::make_pair("I", "C"));
@@ -20,27 +22,19 @@ int main()
 
     std::cout << "1.." << tests.size() << '\n';
 
-    DNA input, output;
     std::string actual;
-
     for (size_t t = 0; t < tests.size(); ++t) {
-        input.clear();
-        input.insert(std::end(input), std::begin(tests[t].first), std::end(tests[t].first));
+        arrow.dna = tests[t].first;
+        auto output = arrow.quote(arrow.dna);
 
-        output = quote(input);
-
-        actual.clear();
-        actual.insert(std::end(actual), std::begin(output), std::end(output));
-
+        auto actual = output.to_string();
         if (tests[t].second != actual) {
             retval = EXIT_FAILURE;
         }
 
         std::cout
             << (tests[t].second != actual ? "not " : "") << "ok " << t + 1
-            << " - " << tests[t].first
-            << " -> " << actual
-            << " (" << tests[t].second << ")\n";
+            << " - " << tests[t].first << " expected " << tests[t].second << " actual " << actual << '\n';
     }
 
     return retval;

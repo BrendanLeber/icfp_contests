@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "dna.hpp"
+#include "execute.hpp"
 
 int main()
 {
@@ -20,25 +20,25 @@ int main()
 
     std::cout << "1.." << tests.size() << '\n';
 
+    Arrow arrow;
+
     Template output;
     std::string actual;
 
     for (size_t t = 0; t < tests.size(); ++t) {
-        dna.clear();
-        dna.insert(std::end(dna), std::begin(tests[t].first), std::end(tests[t].first));
+        auto const& test_case = tests[t].first;
+        arrow.dna = test_case;
 
-        output = templates();
-        actual = to_string(output);
+        auto const& expected = tests[t].second;
+        auto actual = Arrow::to_string(arrow.templates());
 
-        if (tests[t].second != actual) {
+        if (expected != actual) {
             retval = EXIT_FAILURE;
         }
 
         std::cout
-            << (tests[t].second != actual ? "not " : "") << "ok " << t + 1
-            << " - " << tests[t].first
-            << " -> " << actual
-            << " (" << tests[t].second << ")\n";
+            << (expected != actual ? "not " : "") << "ok " << t + 1 << " - "
+            << test_case << " expected " << expected << " actual " << actual << '\n';
     }
 
     return retval;
