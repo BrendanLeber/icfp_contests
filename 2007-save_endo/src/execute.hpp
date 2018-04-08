@@ -162,16 +162,16 @@ struct Arrow {
 
     void execute()
     {
-        ++iteration;
-
 #if defined(TRACE)
         std::cerr << "iteration " << iteration << '\n';
-        std::cerr << "dna = " << to_string(dna) << " (" << dna.length() << " bases)\n";
+        std::cerr << "dna = " << to_string(dna) << '\n';
 #else
         if ((iteration % 1024u) == 0) {
             std::cerr << "iteration " << std::fixed << iteration << "  dna " << std::fixed << dna.length() << "  rna " << std::fixed << rna << "  cost " << std::fixed << cost << '\n';
         }
 #endif
+
+        ++iteration;
 
         auto pat = pattern();
 
@@ -188,9 +188,12 @@ struct Arrow {
         matchreplace(pat, templ);
 
 #if defined(TRACE)
-        // std::cerr << "len(rna) = " << rna.size() << "\n\n";
-        std::cerr << "rna " << std::fixed << rna << "  cost " << std::fixed << cost << '\n';
+        std::cerr << "len(rna) = " << rna << "\n\n";
 #endif
+
+        if (!dna.is_balanced()) {
+            dna.balance();
+        }
     }
 
     void finish()
@@ -207,6 +210,7 @@ struct Arrow {
         Number i = 0;
         Environment e;
         std::deque<Number> c;
+        size_t start, count;
 
         for (auto const& p : pat) {
             switch (p.type) {
@@ -252,7 +256,9 @@ struct Arrow {
                 break;
 
             case PItem::Type::Close:
-                e.emplace_back(Rope{ dna.substring(c.front(), i) });
+                start = static_cast<size_t>(c.front());
+                count = i - start;
+                e.emplace_back(Rope{ dna.substring(start, count) });
                 c.pop_front();
                 break;
             }
@@ -399,6 +405,7 @@ struct Arrow {
         DNA result;
 
         auto size = d.length();
+
         for (size_t base = 0; base < size; ++base) {
             switch (d.at(base)) {
             case 'I':
@@ -436,11 +443,10 @@ struct Arrow {
                        [](char base) { return std::isspace(base); }),
             std::end(data));
 
-#if defined(TRACE)
-        std::cerr << "file " << dna_file << "  length " << data.size() << '\n';
-#endif
-
         dna.append(data);
+        if (!dna.is_balanced()) {
+            dna.balance();
+        }
     }
 
     void replace(Template const& tpl, Environment const& e)
@@ -534,10 +540,11 @@ struct Arrow {
     static std::string to_string(DNA const& dna)
     {
         std::stringstream str;
-        str << dna.substring(0, std::max(10ul, dna.length()));
+        str << dna.substring(0, std::min(10ul, dna.length()));
         if (dna.length() >= 10) {
             str << "...";
         }
+        str << " (" << dna.length() << " bases)";
         return str.str();
     }
 
@@ -556,7 +563,7 @@ struct Arrow {
 
                 str << "e[" << i++ << "] = ";
 
-                str << e.substring(0, std::max(10ul, e.length()));
+                str << e.substring(0, std::min(10ul, e.length()));
                 if (e.length() >= 10) {
                     str << "...";
                 }

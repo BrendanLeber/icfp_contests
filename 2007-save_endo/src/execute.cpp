@@ -15,8 +15,10 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
+#if !defined(TRACE)
     std::cerr.imbue(std::locale(""));
     std::cout.imbue(std::locale(""));
+#endif
 
     Arrow arrow;
 
@@ -25,10 +27,12 @@ int main(int argc, char** argv)
             arrow.read(argv[arg]); /* NOLINT */
         }
 
+#if !defined(TRACE)
         std::cerr << "iteration " << std::fixed << arrow.iteration
                   << "  dna " << std::fixed << arrow.dna.length()
                   << "  rna " << std::fixed << arrow.rna
                   << "  cost " << std::fixed << arrow.cost << '\n';
+#endif
 
         while (true) {
             arrow.execute();
